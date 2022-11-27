@@ -109,30 +109,30 @@ w1 = linspace(0,150); % Hz
 [DW, W1] = meshgrid(dw,w1);
 
 %%%%% Mz_ss %%%%%%
-% figure
-% nrows = 3; % number of subplot rows
-% ncols = 3; % number of subplot columns
-% tiledlayout(nrows, ncols)
-% for i = 1:nrows*ncols
-%     nexttile()
-%     [~,Mz_ss] = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
-%     [c,h] = contourf(W1,DW,Mz_ss,20,'LabelFormat','%0.3f');
-%     xlabel('w_1 [Hz]')
-%     ylabel('dw [Hz]')
-%     clabel(c,h);
-%     title(['Mz^{ss}: ''T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
-% end
-
-%%%%% t_ss %%%%%%
 figure
 nrows = 3; % number of subplot rows
 ncols = 3; % number of subplot columns
 tiledlayout(nrows, ncols)
 for i = 1:nrows*ncols
     nexttile()
-    t_ss = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
-    [c,h] = contourf(W1,DW,t_ss,20);
+    [~,Mz_ss] = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
+    [c,h] = contourf(W1,DW,Mz_ss,20,'LabelFormat','%0.3f');
     xlabel('w_1 [Hz]')
     ylabel('dw [Hz]')
-    title(['t^{ss}: ''T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+    clabel(c,h);
+    title(['Mz^{ss}: T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
 end
+
+%%%%% t_ss %%%%%%
+% figure
+% nrows = 3; % number of subplot rows
+% ncols = 3; % number of subplot columns
+% tiledlayout(nrows, ncols)
+% for i = 1:nrows*ncols
+%     nexttile()
+%     t_ss = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
+%     [c,h] = contourf(W1,DW,t_ss,20);
+%     xlabel('w_1 [Hz]')
+%     ylabel('dw [Hz]')
+%     title(['t^{ss}: T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+% end
