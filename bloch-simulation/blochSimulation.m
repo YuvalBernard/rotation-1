@@ -100,44 +100,39 @@ legend(h(1:end))
 %%%%%% Conclusion: Increasing dw increases Mz_ss and t_ss. %%%%%%
 %% Mz_ss and t_ss dependence on w1,dw (for specific T1,T2)
 close all; clc; clear
-T1 = 1;
-T2 = 20e-3;
-t = linspace(0,7,100)';
-dw = linspace(0,2500); 
-w1 = linspace(0,150); 
+T1 = [0.1 0.5 1]; % s
+T2 = [100e-6 0.5e-3 5e-3]; % s
+[T1,T2] = meshgrid(T1,T2);
+t = linspace(0,7,100)'; % s
+dw = linspace(0,1000); % Hz 
+w1 = linspace(0,150); % Hz
 [DW, W1] = meshgrid(dw,w1);
-[t_ss,Mz_ss] = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1,T2,w1,dw)), W1, DW);
+
 %%%%% Mz_ss %%%%%%
-
 % figure
-% meshc(W1,DW,Mz_ss)
-% xlabel('w_1 [Hz]')
-% ylabel('dw [Hz]')
-% zlabel('Mz^{ss}')
-% title(['Mz^{ss}: ''T_1 = ',num2str(T1), 's, T_2 = ',num2str(T2),'s'])
-
-figure
-contourf(W1,DW,Mz_ss,'ShowText',true,'LabelFormat','%0.3f','LevelList', 0:max(Mz_ss,[],'all'))
-xlabel('w_1 [Hz]')
-ylabel('dw [Hz]')
-zlabel('Mz^{ss}')
-title(['Mz^{ss}: ''T_1 = ',num2str(T1), 's, T_2 = ',num2str(T2),'s'])
+% nrows = 3; % number of subplot rows
+% ncols = 3; % number of subplot columns
+% tiledlayout(nrows, ncols)
+% for i = 1:nrows*ncols
+%     nexttile()
+%     [~,Mz_ss] = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
+%     [c,h] = contourf(W1,DW,Mz_ss,20,'LabelFormat','%0.3f');
+%     xlabel('w_1 [Hz]')
+%     ylabel('dw [Hz]')
+%     clabel(c,h);
+%     title(['Mz^{ss}: ''T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+% end
 
 %%%%% t_ss %%%%%%
-
-% figure
-% meshc(W1,DW,t_ss)
-% xlabel('w_1 [Hz]')
-% ylabel('dw [Hz]')
-% zlabel('t^{ss} [s]')
-% title(['t^{ss}: ''T_1 = ',num2str(T1), 's, T_2 = ',num2str(T2),'s'])
-
 figure
-contourf(W1,DW,t_ss,"ShowText",true,"LabelFormat","%0.3f",'LevelList', 0:max(t_ss,[],'all'))
-xlabel('w_1 [Hz]')
-ylabel('dw [Hz]')
-zlabel('t^{ss} [s]')
-title(['t^{ss}: ''T_1 = ',num2str(T1), 's, T_2 = ',num2str(T2),'s'])
-
-% [opt_w1, opt_dw, opt_t_ss, opt_Mz_ss, Summary] = blochOptimalSaturationPulse(t,T1,T2,w1,dw);
-% disp(Summary);
+nrows = 3; % number of subplot rows
+ncols = 3; % number of subplot columns
+tiledlayout(nrows, ncols)
+for i = 1:nrows*ncols
+    nexttile()
+    t_ss = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
+    [c,h] = contourf(W1,DW,t_ss,20);
+    xlabel('w_1 [Hz]')
+    ylabel('dw [Hz]')
+    title(['t^{ss}: ''T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+end
