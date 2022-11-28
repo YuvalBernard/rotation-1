@@ -105,7 +105,7 @@ T2 = [100e-6 0.5e-3 5e-3]; % s
 [T1,T2] = meshgrid(T1,T2);
 t = linspace(0,7,100)'; % s
 dw = linspace(0,1000); % Hz 
-w1 = linspace(0,150); % Hz
+w1 = linspace(0,1000); % Hz
 [DW, W1] = meshgrid(dw,w1);
 
 %%%%% Mz_ss %%%%%%
@@ -116,10 +116,11 @@ tiledlayout(nrows, ncols)
 for i = 1:nrows*ncols
     nexttile()
     [~,Mz_ss] = arrayfun(@(w1,dw) blochSS(t,bloch(t,T1(i),T2(i),w1,dw)), W1, DW);
-    [c,h] = contourf(W1,DW,Mz_ss,20,'LabelFormat','%0.3f');
+    lvls = 0:0.01:1;
+    [c,h] = contourf(W1,DW,Mz_ss,20,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None');
     xlabel('w_1 [Hz]')
     ylabel('dw [Hz]')
-    clabel(c,h);
+%     clabel(c,h);
     title(['Mz^{ss}: T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
 end
 
