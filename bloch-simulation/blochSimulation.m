@@ -108,6 +108,7 @@ t0 = 0; tmax = 7; q = 100; t = linspace(t0,tmax,q)'; % s
 dw = linspace(0,1000,10); % Hz 
 w1 = linspace(0,1000,10); % Hz
 [DW, W1] = meshgrid(dw,w1);
+Mz_ss = zeros(size(DW));
 
 %%%%% Mz_ss %%%%%%
 figure

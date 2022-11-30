@@ -26,6 +26,7 @@ Mz0 = 1; % initial z-magnetization
      0 0 0 0];
  
  M0 = [0;0;1;1];
+<<<<<<< HEAD
  
 % Calculate M(t) by calculating expA.
 % We need the exponential variant of A, where calculation is done elementwise
@@ -35,5 +36,11 @@ t = t0:(tmax-t0)/(q-1):tmax;
 for i=1:q
 %     M(:,i) = expm(A*t(i))*M0;
     M(:,i) = fastExpm(A*t(i))*M0;
+=======
+% We need the exponential variant of A, where calculation is done elementwise
+M = zeros(length(M0),length(t));
+for i = 1:length(t)
+    M(:,i) = expm(A*t(i))*M0;
+>>>>>>> 5a4bae77ffa2a60c3314ea85ce9c0b35c2cd54bc
 end
 Mx = M(1,:); My = M(2,:); Mz = M(3,:);
