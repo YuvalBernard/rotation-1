@@ -1,4 +1,4 @@
-function [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q)
+function [Mz,Mx,My] = bloch_alt(T1,T2,w1,dw,t0,tmax,q)
 % Simulation of Bloch equations by solving differential equations in the
 % rotating frame. w1 is defined is gamma*H1 and represents the power of the
 % RF field. dw is the offset from resonance = gamma*H0 + w, where w is the
@@ -26,19 +26,20 @@ Mz0 = 1; % initial z-magnetization
      0 0 0 0];
  
  M0 = [0;0;1;1];
- 
-% Calculate M(t) by calculating expA.
-% We need the exponential variant of A, where calculation is done elementwise
-% Initialize M(t)
-M = zeros(length(M0),q);
+
 % Calculate eigenvalues of A
-% [V,D] = eig(A);
-% Save computation time by preprocessing exp(diag(D))
-% expdiag = exp(diag(D));
+[V,D] = eig(A);
+% Initialize time values
 t = t0:(tmax-t0)/(q-1):tmax;
-for i=1:q
-%     M(:,i) = V*diag(expdiag.^t(i))/V*M0;
-    M(:,i) = expm(A*t(i))*M0;
-end
+% Preprocess diag(exp(diag(D)))
+diagexpdiagD = diag(exp(diag(D)));
+Vext = repmat(V,[1 1 q]);
+% Evaluate diag(exp(diag(D))) at all t values
+expDt = (repmat(diagexpdiagD,[1 1 q])).^reshape(t,1,1,[]);
+% Evaluate M(t) as V*expDt/V*M0
+M = pagemtimes(pagemrdivide(pagemtimes(V,expDt),Vext),M0);
 M = real(M);
-Mx = M(1,:); My = M(2,:); Mz = M(3,:);
+% Normalize first page. Somehow not consistent...
+M(:,:,1) = M0;
+% Extract Mx(t),My(t),Mz(t)
+Mx = squeeze(M(1,:)); My = squeeze(M(2,:)); Mz = squeeze(M(3,:));
