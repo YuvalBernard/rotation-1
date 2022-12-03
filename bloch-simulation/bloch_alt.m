@@ -37,8 +37,7 @@ Vext = repmat(V,[1 1 q]);
 % Evaluate diag(exp(diag(D))) at all t values
 expDt = (repmat(diagexpdiagD,[1 1 q])).^reshape(t,1,1,[]);
 % Evaluate M(t) as V*expDt/V*M0
-M = pagemtimes(pagemrdivide(pagemtimes(V,expDt),Vext),M0);
-M = real(M);
+M = pagemtimes(real(pagemrdivide(pagemtimes(Vext,expDt),Vext)),M0);
 % Normalize first page. Somehow not consistent...
 M(:,:,1) = M0;
 % Extract Mx(t),My(t),Mz(t)
