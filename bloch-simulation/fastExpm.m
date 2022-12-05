@@ -40,7 +40,7 @@ H=nonZeroTol*round((1/nonZeroTol)*H);
 %% Run Taylor series procedure on the CPU/GPU
 P=speye(size(H)); nextTerm=P; n=1; 
 
-% Sparsity ans size check
+% Sparsity and size check
 if nnz(H)/numel(H)>0.25 && numel(H)^0.5<=64
     H=full(H);
 else
