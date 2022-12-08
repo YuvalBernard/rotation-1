@@ -7,7 +7,7 @@ function [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,t0,tmax,q)
 % between pool a (water/bulk) and pool b (labile H/solute).
 
 % Output is the Z and A values corresponding
-% to Z = Mza(dwa)/M0a and A = [Mza(-dwa) - Mza(dwa)]/M0a
+% to Z = Mza(dwa)/M0a and A = [Mzb(-dwa) - Mzb(dwa)]/M0a
 % which can be used to plot Z and Assymetry spectra.
 
 % dMxa/dt = dwa*Mya(t) - R2a*Mxa(t) - ka*Mxa(t) + kb*Mxb(t)
@@ -39,7 +39,7 @@ M = zeros(length(M0),q);
 t = t0:(tmax-t0)/(q-1):tmax;
 Z = zeros(size(dwa));
 
-for j = 1:length(dwa)
+for j = 1:length(dwb)
 
     F = [-(R2a+ka) kb dwa(j) 0 0 0 0;...
         ka -(R2b+kb) 0 dwb(j) 0 0 0;...
@@ -53,7 +53,7 @@ for j = 1:length(dwa)
 %             M(:,k) = expm(F*t(k))*M0;
         M(:,k) = fastExpm(F*t(k))*M0;
     end
-    f = spline(t,M(5,:)); % model Mza as 'spline'
+    f = spline(t,M(6,:)); % model Mzb as 'spline'
     dfdt = fnder(f);
     dMzdt = fnval(dfdt,t);
     poss_t_ss = find(abs(dMzdt) < 1e-4,100,'first');
@@ -66,8 +66,8 @@ for j = 1:length(dwa)
         end
     end
     t_ss = t(poss_t_ss(jj));
-    Mza = fnval(f,t_ss);
-    Z(j) = Mza/M0a;
+    Mzb = fnval(f,t_ss);
+    Z(j) = Mzb/M0a;
 end
 
 domain = round(length(dwa)/2);

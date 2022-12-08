@@ -2,11 +2,12 @@
 clear; clc; close all
 % Define constants: default values
 T1 = 1; % s
-T2 = 5e-3; %s
+T2 = 1e-3; %s
 w1 = 150; % Hz; gamma*H1
 dw = 2500; % Hz; gamma*H0-w
 t0 = 0; tmax = 7; q = 10000; t = t0:(tmax-t0)/(q-1):tmax;
 [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
+% [t_ss,Mz_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
 [t_ss,Mz_ss] = blochSS(t,Mz);
 figure; plot(t,Mz,'b-','LineWidth',2); hold on; plot(t_ss,Mz_ss,'r.','MarkerSize',24)
 figure; plot(t,Mx,t,My,t,Mz); legend('Mx','My','Mz')
@@ -18,7 +19,7 @@ Mz0 = 1; % initial z-magnetization
 Anal_Mz_ss = Mz0*(R1*(R2^2+dw^2))/(R1*(R2^2+dw^2)+w1^2*R2);
 
 %% Change T1
-close all; clc; clear
+% close all; clc; clear
 T2 = 2e-3;
 w1 = 150;
 dw = 2500;
@@ -30,7 +31,8 @@ figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz');
 title(['T_2 = ',num2str(T2),'s, w_1 = ', num2str(w1),'Hz, dw = ',num2str(dw),'Hz'])
 for i = 1:length(T1)
     Mz = bloch(T1(i),T2,w1,dw,t0,tmax,q);
-    [t_ss,Mz_ss] = blochSS(t,Mz);
+%     [t_ss,Mz_ss] = blochSS(t,Mz);
+    [t_ss,Mz_ss] = blochSS_alt(T1(i),T2,w1,dw,t0,tmax,q,Mz);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('T1= ',num2str(T1(i))));
     plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
 end
@@ -105,8 +107,8 @@ T1 = [0.1 0.5 1]; % s
 T2 = [100e-6 0.5e-3 5e-3]; % s
 [T1,T2] = meshgrid(T1,T2);
 t0 = 0; tmax = 7; q = 100; t = t0:(tmax-t0)/(q-1):tmax; % s
-dw = linspace(0,1000,10); % Hz 
-w1 = linspace(0,1000,10); % Hz
+dw = linspace(0,1000,100); % Hz 
+w1 = linspace(0,1000,100); % Hz
 [DW, W1] = meshgrid(dw,w1);
 Mz_ss = zeros(size(DW));
 %%%%% Mz_ss %%%%%%
@@ -118,9 +120,8 @@ for i = 1:nrows*ncols
     nexttile()
     for ii = 1:length(w1)
         for jj = 1:length(dw)
-%             Mz = bloch_numerical(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
-%             Mz_ss(jj,ii) = blochSS(t,bloch_numerical_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q));
-            Mz_ss(jj,ii) = blochSS(t,bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q));
+            [~,Mz_ss(jj,ii)] = blochSS_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q,0);
+%             Mz_ss(jj,ii) = blochSS(t,bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q));
         end
     end
     lvls = 0:0.01:1;
@@ -134,9 +135,16 @@ figure
 nrows = 3; % number of subplot rows
 ncols = 3; % number of subplot columns
 tiledlayout(nrows, ncols)
+t_ss = zeros(size(DW));
 for i = 1:nrows*ncols
     nexttile()
-    t_ss = arrayfun(@(w1,dw) blochSS(t,bloch(T1(i),T2(i),w1,dw,t0,tmax,q)), W1, DW);
+    for ii = 1:length(w1)
+        for jj = 1:length(dw)
+            Mz = bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
+%             t_ss(jj,ii) = blochSS_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q,Mz);
+            t_ss(jj,ii) = blochSS(t,Mz);
+        end
+    end
     [c,h] = contourf(W1,DW,t_ss,20,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None');
     xlabel('w_1 [Hz]')
     ylabel('dw [Hz]')

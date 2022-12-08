@@ -62,9 +62,10 @@
     results.
 
     <item>Understand Bloch-McConnell equations and how CEST works.
+    <with|color|blue|\<checkmark\>>
 
     <item>Model CEST in liquid state for different system parameters; check
-    limits.
+    limits.\ 
   </enumerate>
 
   After which:

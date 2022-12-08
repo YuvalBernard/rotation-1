@@ -5,9 +5,9 @@ T1b = 770e-3; T2b = 33e-3; % s
 M0a = 1; M0b = 1e-3; % arb
 kb = 200; % s^-1
 w1 = 127.7; % Hz (irradiation intensity)
-dwa = -1000:10:1000; % Hz (Saturation at given freqs)
+dwa = -1000:10:1000; % Hz (Saturation at given freqs
 dwb = dwa + 700;
-t0 = 0; tmax = 30; q = 1000;
+t0 = 0; tmax = 10; q = 1000;
 
 [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,t0,tmax,q);
 
