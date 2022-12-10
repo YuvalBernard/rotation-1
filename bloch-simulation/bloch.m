@@ -4,7 +4,7 @@ function [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q)
 % RF field. dw is the offset from resonance = gamma*H0 + w, where w is the
 % RF field frequency.
 
-% Assuming that H0 is initialy aligned on z-axis and H1 aligned on x-axis. 
+% Assuming that B0 is initialy aligned on z-axis and H1 aligned on x-axis. 
 % In the rotating frame we have a system of ODEs:
 % dMx/dt = dw*My(t) - Mx(t)/T2
 % dMy/dt = -dw*Mx(t) - My(t)/T2 + w1*Mz(t)
@@ -19,19 +19,28 @@ function [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q)
 % where [V,D] = eig(A).
 
 Mz0 = 1; % initial z-magnetization
+M0 = [0;0;1;1];
+t = t0:(tmax-t0)/(q-1):tmax;
+
+if nargin == 1 % Save resources and calculate Mz only
+   Az = [0 -w1 -1/T1 Mz0/T1];
+   Mz = zeros(1,q);
+   for i=1:q
+    Mz(i) = fastExpm(Az*t(i))*M0;
+   end
+   return
+end
 
  A = [-1/T2 dw 0 0;...
      -dw -1/T2 w1 0;...
      0 -w1 -1/T1 Mz0/T1;...
      0 0 0 0];
  
- M0 = [0;0;1;1];
  
 % Calculate M(t) by calculating expA.
 % We need the exponential variant of A, where calculation is done elementwise
 
 M = zeros(length(M0),q);
-t = t0:(tmax-t0)/(q-1):tmax;
 for i=1:q
 %     M(:,i) = expm(A*t(i))*M0;
     M(:,i) = fastExpm(A*t(i))*M0;

@@ -28,21 +28,19 @@ Mz_ss = det([K(:,1:2) b])/det(K);
 % f = spline(t,Mz-Mz_ss);
 % t_ss = min(fnzeros(f),[],'all');
 
-%%% Approach 2: decide 4 significant digits are enough,
-%%% and find when Mz = Mz_ss (minimal value).
+%%% Approach 2: find when Mz = Mz_ss and dMz/dt = 0 (minimal value).
 
-idx = find((Mz <= Mz_ss + 1e-4) & (abs(gradient(Mz)) <= 1e-4 ),1);
+idx = find((Mz <= Mz_ss + 5e-5) & (abs(gradient(Mz,t)) >= 1e-5 ),1);
 t_ss = t(idx);
 
 %%% Approach 3: numerically solve the following equation derived from the
 %%% formal solution to bloch equations.
 %%% M(t) = exp(-K*t)*(M0 - M_ss) + M_ss.
-%%% Obtain an equation where t = t_ss applying to Mz (subtract Mz_ss from both sides):
-%%% 0 = -Mx*ss*exp(-K(3,1)*t) - My_ss*exp(-K(3,2)*t) +
-%%% (Mz0/T1-Mz_ss)*exp(-K(3,3)*t)
+%%% Take only the part that applies to Mz at SS (and subtract Mz_ss from both sides):
+%%% 0 = -Mx*ss*exp(-K(3,1)*t) - My_ss*exp(-K(3,2)*t) + (Mz0/T1-Mz_ss)*exp(-K(3,3)*t)
 
-Mx_ss = det([b K(:,2:end)])/det(K);
-My_ss = det([K(:,1) b K(:,3)])/det(K);
-syms x; % representing t_ss
-eqn = -Mx_ss*exp(-K(3,1)*x) - My_ss*exp(-K(3,2)*x) + exp(-K(3,3)*x)*(Mz0/T1 - Mz_ss) == 5e-3;
-t_ss = double(vpasolve(eqn,x));
+% Mx_ss = det([b K(:,2:end)])/det(K);
+% My_ss = det([K(:,1) b K(:,3)])/det(K);
+% syms x; % representing t_ss
+% eqn = -Mx_ss*exp(-K(3,1)*x) - My_ss*exp(-K(3,2)*x) + exp(-K(3,3)*x)*(Mz0/T1 - Mz_ss) == 0;
+% t_ss = double(vpasolve(eqn));
