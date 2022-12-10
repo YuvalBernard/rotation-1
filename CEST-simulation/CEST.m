@@ -1,4 +1,4 @@
-function [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,t0,tmax,q)
+function [Z,A,domain,t_ss] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,t0,tmax,q)
 % Simulation of Bloch-McConnell equations
 % by solving differential equations in the
 % rotating frame.
@@ -39,6 +39,23 @@ M = zeros(length(M0),q);
 t = t0:(tmax-t0)/(q-1):tmax;
 Z = zeros(size(dwa));
 
+if nargout < 4 % No dynamics requested. Calculate Z and A directly.
+    for j = 1:length(dwa)
+        K = [(R2a+ka) -kb -dwa(j) 0 0 0;...
+            -ka (R2b+kb) 0 -dwb(j) 0 0;...
+            dwa(j) 0 -(-R2a+ka) -kb -w1 0;...
+            0 dwb(j) -ka (R2b+kb) 0 -w1;...
+            0 0 w1 0 (R1a+ka) -kb;...
+            0 0 0 w1 -ka (R1b+kb)];
+
+        b = [0 0 0 0 R1a*M0a R1b*M0b]';
+        Z(j) = (det([K(:,1:4) b K(:,6)])/det(K))/M0a;
+    end
+    domain = round(length(dwa)/2);
+    A = fliplr(Z(domain:end)) - Z(1:domain);
+    return
+end
+
 for j = 1:length(dwb)
 
     F = [-(R2a+ka) kb dwa(j) 0 0 0 0;...
@@ -53,7 +70,7 @@ for j = 1:length(dwb)
 %             M(:,k) = expm(F*t(k))*M0;
         M(:,k) = fastExpm(F*t(k))*M0;
     end
-    f = spline(t,M(6,:)); % model Mzb as 'spline'
+    f = spline(t,M(5,:)); % model Mza as 'spline'
     dfdt = fnder(f);
     dMzdt = fnval(dfdt,t);
     poss_t_ss = find(abs(dMzdt) < 1e-4,100,'first');
@@ -66,10 +83,10 @@ for j = 1:length(dwb)
         end
     end
     t_ss = t(poss_t_ss(jj));
-    Mzb = fnval(f,t_ss);
-    Z(j) = Mzb/M0a;
+    Mza = fnval(f,t_ss);
+    Z(j) = Mza/M0a;
 end
 
 domain = round(length(dwa)/2);
-A = fliplr(Z(domain:end)) - (Z(1:domain))/M0a;
+A = fliplr(Z(domain:end)) - Z(1:domain);
 

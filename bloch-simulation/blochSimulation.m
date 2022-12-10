@@ -6,17 +6,9 @@ T2 = 1e-3; %s
 w1 = 150; % Hz; gamma*H1
 dw = 2500; % Hz; gamma*H0-w
 t0 = 0; tmax = 7; q = 10000; t = t0:(tmax-t0)/(q-1):tmax;
-[Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
-% [t_ss,Mz_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
-[t_ss,Mz_ss] = blochSS(t,Mz);
+[Mz,Mz_ss,t_ss,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
 figure; plot(t,Mz,'b-','LineWidth',2); hold on; plot(t_ss,Mz_ss,'r.','MarkerSize',24)
 figure; plot(t,Mx,t,My,t,Mz); legend('Mx','My','Mz')
-
-%% Compare numerical and analytical solutions
-R1 = 1/T1; % s^-1
-R2 = 1/T2; % s^-1
-Mz0 = 1; % initial z-magnetization
-Anal_Mz_ss = Mz0*(R1*(R2^2+dw^2))/(R1*(R2^2+dw^2)+w1^2*R2);
 
 %% Change T1
 % close all; clc; clear
@@ -30,11 +22,9 @@ h = zeros(size(T1));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, w_1 = ', num2str(w1),'Hz, dw = ',num2str(dw),'Hz'])
 for i = 1:length(T1)
-    Mz = bloch(T1(i),T2,w1,dw,t0,tmax,q);
-%     [t_ss,Mz_ss] = blochSS(t,Mz);
-    [t_ss,Mz_ss] = blochSS_alt(T1(i),T2,w1,dw,t0,tmax,q,Mz);
+    [Mz,Mz_ss,t_ss] = bloch(T1(i),T2,w1,dw,t0,tmax,q);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('T1= ',num2str(T1(i))));
-    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -51,10 +41,9 @@ h = zeros(size(T2));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_1 = ',num2str(T1),'s, w_1 = ', num2str(w1),'Hz, dw = ',num2str(dw),'Hz'])
 for i = 1:length(T2)
-    Mz = bloch(T1,T2(i),w1,dw,t0,tmax,q);
-    [t_ss,Mz_ss] = blochSS(t,Mz);
+    [Mz,Mz_ss,t_ss] = bloch(T1,T2(i),w1,dw,t0,tmax,q);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('T2= ',num2str(T2(i))));
-    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -71,10 +60,9 @@ h = zeros(size(w1));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, T_1 = ', num2str(T1),'s, dw = ',num2str(dw),'Hz'])
 for i = 1:length(w1)
-    Mz = bloch(T1,T2,w1(i),dw,t0,tmax,q);
-    [t_ss,Mz_ss] = blochSS(t,Mz);
+    [Mz,Mz_ss,t_ss] = bloch(T1,T2,w1(i),dw,t0,tmax,q);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('w_1= ',num2str(w1(i))));
-    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -91,10 +79,9 @@ h = zeros(size(dw));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, T_1 = ', num2str(T1),'s, w_1 = ',num2str(w1),'Hz'])
 for i = 1:length(dw)
-    Mz = bloch(T1,T2,w1,dw(i),t0,tmax,q);
-    [t_ss,Mz_ss] = blochSS(t,Mz);
+    [Mz,Mz_ss,t_ss] = bloch(T1,T2,w1,dw(i),t0,tmax,q);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('dw= ',num2str(dw(i))));
-    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz(t == t_ss),'.','color',colors(i,:),'MarkerSize',24)
 
 end
 legend(h(1:end))
@@ -120,8 +107,7 @@ for i = 1:nrows*ncols
     nexttile()
     for ii = 1:length(w1)
         for jj = 1:length(dw)
-            [~,Mz_ss(jj,ii)] = blochSS_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q,0);
-%             Mz_ss(jj,ii) = blochSS(t,bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q));
+            [~,Mz_ss(jj,ii)] = bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
         end
     end
     lvls = 0:0.01:1;
@@ -140,9 +126,8 @@ for i = 1:nrows*ncols
     nexttile()
     for ii = 1:length(w1)
         for jj = 1:length(dw)
-            Mz = bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
-%             t_ss(jj,ii) = blochSS_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q,Mz);
-            t_ss(jj,ii) = blochSS(t,Mz);
+            [~,~,t_ss(jj,ii)] = bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
+%             t_ss(jj,ii) = blochSS(t,Mz);
         end
     end
     [c,h] = contourf(W1,DW,t_ss,20,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None');
