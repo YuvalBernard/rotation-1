@@ -1,4 +1,16 @@
-funct}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}}} the form:
+function [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q)
+% Simulation of Bloch equations by solving differential equations in the
+% rotating frame. w1 is defined is gamma*B1 and represents the power of the
+% RF field. dw is the offset from resonance = gamma*B0 + w, where w is the
+% RF field frequency.
+
+% Assuming that B0 is initialy aligned on z-axis and B1 aligned on x-axis.
+% In the rotating frame we have a system of ODEs:
+% dMx/dt = dw*My(t) - Mx(t)/T2
+% dMy/dt = -dw*Mx(t) - My(t)/T2 + w1*Mz(t)
+% dMz/dt = -w1*My(t) - [Mz(t)-Mz0]/T1
+
+% System of equations can be reduced to the form:
 % M(t) = exp(-K*t)*[M0 - M_ss] + M_ss
 % exp(-K*t) can be expressed as V*exp(-D*t)/V
 % where [V,D] = eig(K).
