@@ -27,13 +27,11 @@ A = [-1/T2 dw 0 0;...
     0 -w1 -1/T1 Mz0/T1;...
     0 0 0 0];
 
-
-% Calculate M(t) by calculating expA.
 % We need the exponential variant of A, where calculation is done elementwise
 
 M = zeros(length(M0),q);
 for i=1:q
-    %     M(:,i) = expm(A*t(i))*M0;
     M(:,i) = fastExpm(A*t(i))*M0;
 end
-Mx = M(1,:); My = M(2,:); Mz = M(3,:);
+Mz = M(3,:);
+if nargout > 1; Mx = M(1,:); My = M(2,:); end

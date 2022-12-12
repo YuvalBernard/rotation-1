@@ -27,13 +27,13 @@ for i=1:(length(poss_t_ss)-1)
 end
 t_ss = t(poss_t_ss(j));
 
-%%% Approach 1: fit Mz-Mz_ss to spline and use fnzeros to find roots of 
+%%% Approach 2: fit Mz-Mz_ss to spline and use fnzeros to find roots of 
 %%% fit. Then, take the min root found.
 
 % f = spline(t,Mz-Mz_ss);
 % t_ss = min(fnzeros(f),[],'all');
 
-%%% Approach 2: find when Mz = Mz_ss and dMz/dt = 0 (minimal value).
+%%% Approach 3: find when Mz = Mz_ss and dMz/dt = 0 (minimal value).
 % dMz = fnval(fnder(spline(t,Mz)),t);
 % if Mz_ss <= 1e-2
 %     idx = find((Mz <= Mz_ss + 5e-5) & (abs(dMz) <= 5e-5),1);
@@ -43,7 +43,7 @@ t_ss = t(poss_t_ss(j));
 
 % poss_t_ss = find(abs(dMz) < 1e-4,100,'first');
 
-%%% Approach 3: numerically solve the following equation derived from the
+%%% Approach 4: numerically solve the following equation derived from the
 %%% formal solution to bloch equations.
 %%% M(t) = exp(-K*t)*(M0 - M_ss) + M_ss.
 %%% Take only the part that applies to Mz at SS (and subtract Mz_ss from both sides):

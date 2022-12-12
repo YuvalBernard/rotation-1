@@ -55,7 +55,9 @@ if nargout < 4 % No dynamics requested. Calculate Z and A directly.
     A = fliplr(Z(domain:end)) - Z(1:domain);
     return
 end
-
+% We're asked to calculate t_ss. return table of t_sat and t_ss
+t_ssa = zeros(size(dwb));
+tsatb = zeros(size(dwb));
 for j = 1:length(dwb)
 
     F = [-(R2a+ka) kb dwa(j) 0 0 0 0;...
@@ -67,26 +69,32 @@ for j = 1:length(dwb)
         0 0 0 0 0 0 0];
 
     for k=1:q
-%             M(:,k) = expm(F*t(k))*M0;
         M(:,k) = fastExpm(F*t(k))*M0;
     end
-    f = spline(t,M(5,:)); % model Mza as 'spline'
-    dfdt = fnder(f);
-    dMzdt = fnval(dfdt,t);
-    poss_t_ss = find(abs(dMzdt) < 1e-4,100,'first');
+    fa = spline(t,M(5,:)); % model Mza as 'spline'
+    fb = spline(t,M(6,:)); % model Mzb as 'spline'
+    dMza = fnval(fnder(fa),t);
+    dMzb = fnval(fnder(fb),t);
+    poss_t_ssa = find(abs(dMza) < 1e-4,50,'first');
+    poss_t_satb = find(abs(dMzb) < 1e-4,50,'first');
     jj = 1;
-    for i=1:(length(poss_t_ss)-1)
-        if (poss_t_ss(i+1) == poss_t_ss(i) + 1)
+    for i=1:(length(poss_t_ssa)-1)
+        if (poss_t_ssa(i+1) == poss_t_ssa(i) + 1)
             continue
         else
             jj = i+1;
         end
     end
-    t_ss = t(poss_t_ss(jj));
-    Mza = fnval(f,t_ss);
-    Z(j) = Mza/M0a;
+    t_ssa(j) = t(poss_t_ssa(jj));
+    jj = 1;
+    for i=1:(length(poss_t_satb)-1)
+        if (poss_t_satb(i+1) == poss_t_satb(i) + 1)
+            continue
+        else
+            jj = i+1;
+        end
+    end
+    t_satb(j) = t(poss_t_satb(jj));
 end
-
-domain = round(length(dwa)/2);
-A = fliplr(Z(domain:end)) - Z(1:domain);
+t_ss = table(t_satb,t_ssa,'VariableNames',{'t^a_{ss}','t^b_{sat}'});
 

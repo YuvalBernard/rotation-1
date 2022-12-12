@@ -1,4 +1,4 @@
-function [t_ss, Mz_ss, f] = blochSS(t,Mz)
+function [t_ss, Mz_ss] = blochSS(t,Mz)
 % This function gets the z-magnetization and calculates the magnetization
 % in steady state and the time needed to reach it.
 % Fit spline to data and calculate derivative.
