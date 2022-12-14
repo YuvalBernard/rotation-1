@@ -2,13 +2,13 @@
 clear; clc; close all
 % Define constants: default values
 T1 = 1; % s
-T2 = 1e-3; %s
+T2 = 5e-3; %s
 w1 = 150; % Hz; gamma*H1
 dw = 2500; % Hz; gamma*H0-w
 t0 = 0; tmax = 7; q = 10000; t = t0:(tmax-t0)/(q-1):tmax;
 % [Mz,Mz_ss,t_ss,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
-[Mz,Mx,My] = bloch_alt(T1,T2,w1,dw,t0,tmax,q);
-[Mz_ss,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
+[Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
+[Mz_ss,t_ss] = blochSS_alt(T1,T2,w1,dw);
 figure; plot(t,Mz,'b-','LineWidth',2); hold on; plot(t_ss,Mz_ss,'r.','MarkerSize',24)
 figure; plot(t,Mx,t,My,t,Mz); legend('Mx','My','Mz')
 
@@ -126,6 +126,7 @@ for i = 1:nrows*ncols
     xlabel('w_1 [Hz]')
     ylabel('dw [Hz]')
     title(['Mz^{ss}: T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+    colorbar
 end
 %%%% t_ss %%%%%%
 figure
@@ -137,15 +138,13 @@ for i = 1:nrows*ncols
     nexttile()
     for ii = 1:length(w1)
         for jj = 1:length(dw)
-            Mz = bloch_alt(T1,T2,w1,dw,t0,tmax,q);
-            [~,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
-%             [~,~,t_ss(jj,ii)] = bloch(T1(i),T2(i),W1(jj,ii),DW(jj,ii),t0,tmax,q);
-%             t_ss(jj,ii) = blochSS(t,Mz);
+            [~,t_ss(jj,ii)] = blochSS_alt(T1(i),T2(i),W1(jj,ii),DW(jj,ii));
         end
     end
     [c,h] = contourf(W1,DW,t_ss,20,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None');
     xlabel('w_1 [Hz]')
     ylabel('dw [Hz]')
     title(['t^{ss}: T_1 = ',num2str(T1(i)), 's, T_2 = ',num2str(T2(i)),'s'])
+    colorbar
 end
 toc

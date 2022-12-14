@@ -1,13 +1,8 @@
-function [Mz_ss, t_ss] = blochSS_alt(varargin)
+function [Mz_ss, t_ss] = blochSS_alt(T1,T2,w1,dw)
 
 % This function gets the z-magnetization and calculates the magnetization
 % in steady state and the time needed to reach it.
 % Fit spline to data and calculate derivative.
-
-T1 = varargin{1};
-T2 = varargin{2};
-w1 = varargin{3};
-dw = varargin{4};
 
 %%%%%%%%%%%%%%% Calculating Mz_ss %%%%%%%%%%%%%%%
 Mz0 = 1; % initial z-magnetization
@@ -18,31 +13,46 @@ K = [1/T2 -dw 0;...
 % Define initial magnetization vector
 b = [0 0 Mz0/T1]';
 % Calculate solid-state value.
-Mz_ss = det([K(:,1:2) b])/det(K);
+M_ss = K\b; Mz_ss = M_ss(3);
 
 %%%%%%%%%%%%%%% Calculating t_ss %%%%%%%%%%%%%%%
 if nargout > 1 % calculate only if requested
-    t0 = varargin{5}; tmax = varargin{6}; q = varargin{7};
-    Mz = varargin{8};
-    t = t0:(tmax-t0)/(q-1):tmax;
-    % fit data to cubic spline
-    f = spline(t,Mz);
-    % evaluate derivatives at all t
-    dMz = fnval(fnder(f,t));
-    % Find t such that dMz -> 0, arbitrarily dMz < 1e-4.
-    % Find the 50 first occurences that satisfy condition.
-    poss_t_ss = find(abs(dMz) < 1e-4,50,'first');
-    % If all occurences are adjacent, t_ss shall be the first occurence.
-    % If the condition is not met [see T1,2=1,0.005; w1=150,dw=0 for reference]
-    % take the first element of the subseries for which the occurences
-    % are adjacent until the end
-    j = 1;
-    for i=1:(length(poss_t_ss)-1)
-        if (poss_t_ss(i+1) == poss_t_ss(i) + 1)
-            continue
-        else
-            j = i+1;
-        end
-    end
-    t_ss = t(poss_t_ss(j));
+    % Different approaches to calculate time required to approach steady state
+
+    %%%%%%%%%%% Disclaimer: %%%%%%%%%%%
+    % I don't think it can be found analytically.
+    % Also, Approach 1 seems to be more consistent than Approach 2.
+
+    %%%%%%%%%%% Approach 1  %%%%%%%%%%%
+    % Stability analysis dictates that:
+    % Given a system of linear ODEs such that dx/dt = A*x + b
+    % (a) There is a unique solution if and only if rank(A) = rank(A|b)
+    % (b) Solution is stable if the real parts of the eigenvalues of A are negative
+    % (c) The Solution decays exponentially, relatively to the maximal (negative) eigenvalue of A.
+
+    % Thus, the settling time can be approximated to desired accuracy as follows:
+    % t = x/EV
+    % x = ln(100/error), error in percentage (represents desired accuracy)
+    % EV = min(abs(real(eig(A))))
+
+    A = [-1/T2 dw 0;...
+        -dw -1/T2 w1;...
+        0 -w1 -1/T1];
+
+    EV = min(abs(real(eig(A))));
+    err = 0.067; % Set this to desired degree of accuracy
+    t_ss = log(100/err)/EV;
+
+    %%%%%%%%%%% Approach 2  %%%%%%%%%%%
+    % Contstruct a state-space model of the system (LTI system)
+    % Extract t_ss using given tools provided by MATLAB's Control System
+    % Toolbox
+
+    % Differential equation for state variables:
+    % dx/dt = A*x + B*u
+    % where x = [Mx My Mz]', A is the coefficient matrix of the linear ODE, and
+    % B is [0 0 1/T1]'. u is the single input: Mz0.
+    % Equation for output:
+    % y = C*x + D*u
+    % where y = Mz is the output, C = [0 0 1], D = 0.
 end
