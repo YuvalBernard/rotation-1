@@ -24,11 +24,10 @@ h = zeros(size(T1));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, w_1 = ', num2str(w1),'Hz, dw = ',num2str(dw),'Hz'])
 for i = 1:length(T1)
-%     [Mz,~,t_ss] = bloch(T1(i),T2,w1,dw,t0,tmax,q);
-    Mz = bloch_alt(T1(i),T2,w1,dw,t0,tmax,q);
-    [~,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
+    Mz = bloch(T1(i),T2,w1,dw,t0,tmax,q);
+    [Mz_ss,t_ss] = blochSS_alt(T1(i),T2,w1,dw);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('T1= ',num2str(T1(i))));
-    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -45,11 +44,10 @@ h = zeros(size(T2));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_1 = ',num2str(T1),'s, w_1 = ', num2str(w1),'Hz, dw = ',num2str(dw),'Hz'])
 for i = 1:length(T2)
-%     [Mz,~,t_ss] = bloch(T1,T2(i),w1,dw,t0,tmax,q);
-    Mz = bloch_alt(T1,T2(i),w1,dw,t0,tmax,q);
-    [~,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
+    Mz = bloch(T1,T2(i),w1,dw,t0,tmax,q);
+    [Mz_ss,t_ss] = blochSS_alt(T1,T2(i),w1,dw);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('T2= ',num2str(T2(i))));
-    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -66,11 +64,10 @@ h = zeros(size(w1));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, T_1 = ', num2str(T1),'s, dw = ',num2str(dw),'Hz'])
 for i = 1:length(w1)
-%     [Mz,~,t_ss] = bloch(T1,T2,w1(i),dw,t0,tmax,q);
-    Mz = bloch_alt(T1,T2,w1(i),dw,t0,tmax,q);
-    [~,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
+    Mz = bloch(T1,T2,w1(i),dw,t0,tmax,q);
+    [Mz_ss,t_ss] = blochSS_alt(T1,T2,w1(i),dw);
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('w_1= ',num2str(w1(i))));
-    plot(t_ss,Mz(t==t_ss),'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
 end
 legend(h(1:end))
 
@@ -87,11 +84,10 @@ h = zeros(size(dw));
 figure(); hold on; grid on; xlabel('t (s)'); ylabel('Mz'); 
 title(['T_2 = ',num2str(T2),'s, T_1 = ', num2str(T1),'s, w_1 = ',num2str(w1),'Hz'])
 for i = 1:length(dw)
-%     [Mz,~,t_ss] = bloch(T1,T2,w1,dw(i),t0,tmax,q);
-    Mz = bloch_alt(T1,T2,w1,dw(i),t0,tmax,q);
-    [~,t_ss] = blochSS_alt(T1,T2,w1,dw,t0,tmax,q,Mz);
+    Mz = bloch(T1,T2,w1,dw(i),t0,tmax,q);
+    [Mz_ss,t_ss] = blochSS_alt(T1,T2,w1,dw(i));
     h(i) = plot(t,Mz,'color',colors(i,:),'LineWidth',2,'DisplayName',strcat('dw= ',num2str(dw(i))));
-    plot(t_ss,Mz(t == t_ss),'.','color',colors(i,:),'MarkerSize',24)
+    plot(t_ss,Mz_ss,'.','color',colors(i,:),'MarkerSize',24)
 
 end
 legend(h(1:end))

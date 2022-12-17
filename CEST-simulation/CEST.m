@@ -1,4 +1,4 @@
-function [Z,A,domain,t_ss] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,varargin)
+function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,varargin)
 % Simulation of Bloch-McConnell equations
 % by solving differential equations in the
 % rotating frame.
@@ -50,40 +50,85 @@ function [Z,A,domain,t_ss] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,dwb,w1,varargin
 R1a = 1/T1a; R2a = 1/T2a;
 R1b = 1/T1b; R2b = 1/T2b;
 ka = kb*M0b/M0a; % Given from mass equality on both sides of exchange chemical equation
+b = [0 0 R1a*M0a 0 0 R1b*M0b]';
 if ~isempty(varargin) % Obtain RF pulse duration if given
     tp = varargin{1};
-    t = t0:1e-6:tp;
 end
 M0 = [0 0 M0a 0 0 M0b]';
 Z = zeros(size(dwa));
-
+% if dwa is not symmetric wrt 0, calculate A via the same method of Z
+if dwa(end) ~= -dwa(1)
+    % Find boundry for length of A
+    if db < 0 % Peak should be at postive dwa
+        if dwa(1) < 0 % Domain should contain all positive dwa slots
+            idx = find(dwa >= 0,1);
+            domain = length(dwa) - idx;
+        else
+            domain = find(dwa < 0,1) -1; idx = 0;
+            if isempty(domain); domain = length(dwa); end
+        end
+    else % Peak should be at negative dwa
+        if dwa(1) < 0 % Domain should contain all negative dwa slots
+            domain = find(dwa > 0,1) -1; idx = 0;
+            if isempty(domain); domain = length(dwa); end
+        else
+            idx = find(dwa <= 0,1);
+            domain = length(dwa) - idx;
+        end
+    end
+       
+    A = zeros(1,domain); % Initialize A
+end
 
 if nargout < 4 % No dynamics analysis (t_ss) requested.
     for j = 1:length(dwa)
-       
-        K = -[-(R2a+ka) -dwa(j) 0 kb 0 0;...
-            dwa(j) -(R2a+ka) -w1 0 kb 0;...
-            0 w1 -(R1a+ka) 0 0 kb;...
-            ka 0 0 -(R2b+kb) -dwb(j) 0;...
-            0 ka 0 dwb(j) -(R2b+kb) -w1;...
+
+        K = -[-(R2a+ka) dwa(j) 0 kb 0 0;
+            -dwa(j) -(R2a+ka) -w1 0 kb 0;
+            0 w1 -(R1a+ka) 0 0 kb;
+            ka 0 0 -(R2b+kb) (dwa(j)+db) 0;
+            0 ka 0 -(dwa(j)+db) -(R2b+kb) -w1;
             0 0 ka 0 w1 -(R1b+kb)];
 
-        b = [0 0 R1a*M0a 0 0 R1b*M0b]';
         M_ss = K\b;
+
         if isempty(varargin) % Full saturation assumed
             Z(j) = M_ss(3)/M0a;
-        else % Partial saturation possible
+        else % Calculate Z for given tp
             M_tp = fastExpm(-K*tp)*(M0 - M_ss) + M_ss;
             Z(j) = M_tp(3)/M0a;
         end
+
+        if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
+            K_ = -[-(R2a+ka) -dwa(j) 0 kb 0 0;
+                   dwa(j) -(R2a+ka) -w1 0 kb 0;
+                   0 w1 -(R1a+ka) 0 0 kb;
+                   ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
+                   0 ka 0 -(-dwa(j)+db) -(R2b+kb) -w1;
+                   0 0 ka 0 w1 -(R1b+kb)];
+
+            M_ss_ = K_\b;
+
+            if isempty(varargin) % Full saturation assumed
+                A(j) = (M_ss_(3) - M_ss(3))/M0a;
+            else % Calculate A for given tp
+                M_tp_ = fastExpm(-K_*tp)*(M0 - M_ss_) + M_ss_;
+                A(j) = (M_tp_(3) - M_tp(3))/M0a;
+            end
+        end
     end
-    domain = round(length(dwa)/2);
-    A = fliplr(Z(domain:end)) - Z(1:domain);
+    if dwa(end) == -dwa(1)
+        %  Assuming the domain is symmetric
+        domain = round(length(dwa)/2);
+        A = fliplr(Z(domain:end)) - Z(1:domain);
+    end
     return
 end
-% We're asked to calculate t_ss. return table of t_sat and t_ss
-t_ssa = zeros(size(dwb));
-tsatb = zeros(size(dwb));
-
-t_ss = table(t_satb,t_ssa,'VariableNames',{'t^a_{ss}','t^b_{sat}'});
-
+if nargout > 3
+    % We're asked to calculate t_ss. return table of t_sat and t_ss
+    % t_ssa = zeros(size(dwb));
+    % tsatb = zeros(size(dwb));
+    %
+    % t_ss = table(t_satb,t_ssa,'VariableNames',{'t^a_{ss}','t^b_{sat}'});
+    varargout{4} = t_ss;
+end

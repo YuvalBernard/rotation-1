@@ -35,16 +35,13 @@ if nargout > 1 % calculate only if requested
     % x = ln(100/error), error in percentage (represents desired accuracy)
     % EV = min(abs(real(eig(A))))
 
-    A = [-1/T2 dw 0;...
-        -dw -1/T2 w1;...
-        0 -w1 -1/T1];
-
+    A = -K;
     EV = min(abs(real(eig(A))));
     err = 0.067; % Set this to desired degree of accuracy
     t_ss = log(100/err)/EV;
 
     %%%%%%%%%%% Approach 2  %%%%%%%%%%%
-    % Contstruct a state-space model of the system (LTI system)
+    % Construct a state-space model of the system (LTI system)
     % Extract t_ss using given tools provided by MATLAB's Control System
     % Toolbox
 
