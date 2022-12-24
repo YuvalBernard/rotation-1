@@ -4,30 +4,33 @@ T1a = 3; T2a = 2; % s
 T1b = 770e-3; T2b = 33e-3; % s
 M0a = 1; M0b = M0a*1e-3; % arb
 kb = 200; % s^-1
-w1 = 127.7; % Hz (irradiation intensity)
-dwa = 1000:-0.1:-1000; % Hz (Saturation at given freqs)
+w1 = 42.58*3; % Hz (irradiation intensity)
+dwa = 1000:-10:-1000; % Hz (Saturation at given freqs)
 db = -700; % offset between wa and wb; dwb = dwa + db
-[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1);
-plot(dwa,Z,'k',dwa(1:domain),A,'b');
-ax = gca;
-ax.XDir = 'reverse';
+[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
+plot(dwa,Z,'k',dwa(1:domain),A,'b'); ax = gca; ax.XDir = 'reverse';
 %% Change w1
 clc;clear;close all;
 
 T1a = 3; T2a = 2; % s
 T1b = 770e-3; T2b = 33e-3; % s
 M0a = 1; M0b = M0a*1e-3; % arb
-kb = 200; % s^-1
-dwa = 1000:-0.1:-1000; % Hz (Saturation at given freqs)
+kb = 200; % Hz
+dwa = 1000:-10:-1000; % Hz (Saturation at given freqs)
 db = -700; % offset between wa and wb; dwb = dwa + db
-w1 = [42.6 85.2 127.7];
-colors = lines(length(w1));
+w1 = [1 2 3]*42.58; % Hz
 h = zeros(length(w1),1);
+hold on
 for i=1:length(w1)
-    [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1(i),10);
-    h(i) = plot(dwa,Z,'color',colors(i,:),'DisplayName',strcat('w1= ',num2str(w1(i)),' Hz'));
-    hold on
-    plot(dwa(1:domain),A,'color',colors(i,:),'LineStyle','-');
+    [Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1(i),2.5);
+    yyaxis left
+    ylabel('Z Specta')
+    ylim([-0.2 1])
+    h(i) = plot(dwa,Z,'DisplayName',strcat('w1= ',num2str(w1(i)),' Hz'));
+    yyaxis right
+    ylabel('A Spectra')
+    ylim([-0.1 0.5])
+    plot(dwa(1:domain),A);
 end
 ax = gca;
 ax.XDir = 'reverse';
@@ -45,7 +48,7 @@ w1 = 512; % Hz
 T1a = 1; T2a = 0.2; % s
 T1b = 0.1; T2b = 0.1; % s
 M0a = 1; M0b = 0.0003636;
-[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1);
+[Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
 
 plot(dwa,Z,dwa(1:domain),A)
 ax = gca;

@@ -7,7 +7,7 @@ w1 = 150; % Hz; gamma*H1
 dw = 2500; % Hz; gamma*H0-w
 t0 = 0; tmax = 7; q = 10000; t = t0:(tmax-t0)/(q-1):tmax;
 % [Mz,Mz_ss,t_ss,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
-[Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q);
+[Mz,Mx,My] = bloch_krylov(T1,T2,w1,dw,t0,tmax,q);
 [Mz_ss,t_ss] = blochSS_alt(T1,T2,w1,dw);
 figure; plot(t,Mz,'b-','LineWidth',2); hold on; plot(t_ss,Mz_ss,'r.','MarkerSize',24)
 figure; plot(t,Mx,t,My,t,Mz); legend('Mx','My','Mz')

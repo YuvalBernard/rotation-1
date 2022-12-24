@@ -38,16 +38,16 @@ t_ss = log(100/err)/EV;
 % y = C*x + D*u
 % where y = Mz is the output, C = [0 0 1], D = 0.
 
-% % A = [-1/T2 dw 0;...
-% %     -dw -1/T2 w1;...
-% %     0 -w1 -1/T1];
-% % B = [0 0 1/T1];
-% % C = [0 0 1];
-% % D = 0;
-% % sys = ss(A,B,C,D);
-% % ST = 5e-4; % (%error/100)
-% % S = stepinfo(sys,'SettlingTimeThreshold',ST);
-% % t_ss = S.SettlingTime;
+% A = [-1/T2 dw 0;
+    -dw -1/T2 w1;
+    0 -w1 -1/T1];
+% B = [0 0 1/T1]';
+% C = [0 0 1];
+% D = 0;
+% sys = ss(A,B,C,D);
+% ST = 5e-4; % (%error/100)
+% S = stepinfo(sys,'SettlingTimeThreshold',ST);
+% t_ss = S.SettlingTime;
 
 % SettlingTime is taken as the first time T such that
 % error|y(t)-y_ss| <= ST*|y_ss-y(0)|

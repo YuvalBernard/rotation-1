@@ -8,25 +8,17 @@ function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,vara
 
 % Output is the Z and A values corresponding
 % to Z = Mza(dwa)/M0a and A = [Mzb(-dwa) - Mzb(dwa)]/M0a
-% which can be used to plot Z and Assymetry spectra.
+% which can be used to plot Z and MTR_Assymetry spectra.
 
 % Calculation of Z and A spectra is available for both full and partial
 % saturation of pool b. Saturation level is calculated if given RF (CW)
 % pulse duration.
 
-% dMxa/dt = dwa*Mya(t) - R2a*Mxa(t) - ka*Mxa(t) + kb*Mxb(t)
-% dMxb/dt = dwb*Myb(t) - R2b*Mxb(t) - kb*Mxb(t) + ka*Mxa(t)
-% dMya/dt = -dwa*Mxa(t) - R2a*Mya(t) - ka*Mya(t) + kb*Myb(t) + w1*Mza(t)
-% dMyb/dt = -dwb*Mxb(t) - R2b*Myb(t) - kb*Myb(t) + ka*Mya(t) + w1*Mzb(t)
-% dMza/dt = -w1*Mya(t) - R1a*[Mza(t)-M0a] - ka*Mza(t) + kb*Mzb(t)
-% dMzb/dt = -w1*Myb(t) - R1b*[Mzb(t)-M0b] - kb*Mzb(t) + ka*Mza(t)
-
-% From paper:
-% dMxa/dt = -(R2a + ka)*Mxa(t) - dwa*Mya(t) + kb*Mxb(t)
-% dMya/dt = dwa*Mxa(t) - (R2a + ka)*Mya(t) - w1*Mza(t) + kb*Myb(t)
+% dMxa/dt = -(R2a + ka)*Mxa(t) + dwa*Mya(t) + kb*Mxb(t)
+% dMya/dt = -dwa*Mxa(t) - (R2a + ka)*Mya(t) - w1*Mza(t) + kb*Myb(t)
 % dMza/dt = w1*Mya(t) - (R1a + ka)*Mza(t) + kb*Mzb(t) + R1a*Mza0
-% dMxb/dt = ka*Mxa(t) - (R2b + kb)*Mxb(t) - dwb*Myb(t)
-% dMyb/dt = ka*Mya(t) + dwb*Mxb(t) - (R2b + kb)*Myb(t) - w1*Mzb(t)
+% dMxb/dt = ka*Mxa(t) - (R2b + kb)*Mxb(t) + dwb*Myb(t)
+% dMyb/dt = ka*Mya(t) - dwb*Mxb(t) - (R2b + kb)*Myb(t) - w1*Mzb(t)
 % dMzb/dt = ka*Mza(t) + w1*Myb(t) - (R1b + kb)*Mzb(t) + R1b*Mz0b
 
 
@@ -37,13 +29,10 @@ function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,vara
 % kb is the exchange rate from spins in pool b to pool a
 
 % The equations above can be reduced to the matrix form:
-% dM/dt = F*M
-% or dM/dt = -K*M + b;
+% dM/dt = -K*M + b;
 
 % The solution is of the form:
-% M(t) = expm(F*t)*M0;
-% M = [Mxa(t) Mya(t) Mza(t) Mxb(t) Myb(t) Mzb(t) 1]'
-% or M(t) = expm(-K*t)*(M0 - M_ss) + M_ss;
+% M(t) = expm(-K*t)*(M0 - M_ss) + M_ss;     M_ss = K\b
 % M = [Mxa(t) Mya(t) Mza(t) Mxb(t) Myb(t) Mzb(t)]'
 
 % Define constants
@@ -84,11 +73,11 @@ if nargout < 4 % No dynamics analysis (t_ss) requested.
     for j = 1:length(dwa)
 
         K = -[-(R2a+ka) dwa(j) 0 kb 0 0;
-            -dwa(j) -(R2a+ka) -w1 0 kb 0;
-            0 w1 -(R1a+ka) 0 0 kb;
+            -dwa(j) -(R2a+ka) w1 0 kb 0;
+            0 -w1 -(R1a+ka) 0 0 kb;
             ka 0 0 -(R2b+kb) (dwa(j)+db) 0;
-            0 ka 0 -(dwa(j)+db) -(R2b+kb) -w1;
-            0 0 ka 0 w1 -(R1b+kb)];
+            0 ka 0 -(dwa(j)+db) -(R2b+kb) w1;
+            0 0 ka 0 -w1 -(R1b+kb)];
 
         M_ss = K\b;
 
@@ -101,11 +90,11 @@ if nargout < 4 % No dynamics analysis (t_ss) requested.
 
         if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
             K_ = -[-(R2a+ka) -dwa(j) 0 kb 0 0;
-                   dwa(j) -(R2a+ka) -w1 0 kb 0;
-                   0 w1 -(R1a+ka) 0 0 kb;
-                   ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
-                   0 ka 0 -(-dwa(j)+db) -(R2b+kb) -w1;
-                   0 0 ka 0 w1 -(R1b+kb)];
+            dwa(j) -(R2a+ka) w1 0 kb 0;
+            0 -w1 -(R1a+ka) 0 0 kb;
+            ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
+            0 ka 0 -(-dwa(j)+db) -(R2b+kb) w1;
+            0 0 ka 0 -w1 -(R1b+kb)];
 
             M_ss_ = K_\b;
 

@@ -18,7 +18,7 @@ function [Mz,Mx,My] = bloch(T1,T2,w1,dw,t0,tmax,q)
 Mz0 = 1; % initial z-magnetization
 t = t0:(tmax-t0)/(q-1):tmax;
 % Define propagation matrix
-K = -[-1/T2 dw 0;
+K = [-1/T2 dw 0;
       -dw -1/T2 w1;
       0 -w1 -1/T1];
 % Define initial magnetization vector
@@ -29,7 +29,7 @@ M_ss = K\(M0/T1);
 
 M = zeros(3,q);
 for i = 1:q
-    M(:,i) = fastExpm(-K*t(i))*(M0 - M_ss) + M_ss;
+    M(:,i) = fastExpm(K*t(i))*(M0 + M_ss) - M_ss;
 end
 Mz = M(3,:);
 My = M(2,:);
