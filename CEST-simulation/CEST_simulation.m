@@ -22,7 +22,7 @@ w1 = [1 2 3]*42.58; % Hz
 h = zeros(length(w1),1);
 hold on
 for i=1:length(w1)
-    [Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1(i),2.5);
+    [Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1(i),10);
     yyaxis left
     ylabel('Z Specta')
     ylim([-0.2 1])
@@ -48,7 +48,7 @@ w1 = 512; % Hz
 T1a = 1; T2a = 0.2; % s
 T1b = 0.1; T2b = 0.1; % s
 M0a = 1; M0b = 0.0003636;
-[Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
+[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
 
 plot(dwa,Z,dwa(1:domain),A)
 ax = gca;

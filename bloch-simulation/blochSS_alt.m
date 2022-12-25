@@ -5,13 +5,12 @@ function [Mz_ss, t_ss] = blochSS_alt(T1,T2,w1,dw)
 % Fit spline to data and calculate derivative.
 
 %%%%%%%%%%%%%%% Calculating Mz_ss %%%%%%%%%%%%%%%
-Mz0 = 1; % initial z-magnetization
 % Define propagation matrix
 K = [1/T2 -dw 0;...
     dw 1/T2 -w1;...
     0 w1 1/T1];
 % Define initial magnetization vector
-b = [0 0 Mz0/T1]';
+b = [0 0 1/T1]';
 % Calculate solid-state value.
 M_ss = K\b; Mz_ss = M_ss(3);
 
@@ -35,10 +34,8 @@ if nargout > 1 % calculate only if requested
     % x = ln(100/error), error in percentage (represents desired accuracy)
     % EV = min(abs(real(eig(A))))
 
-    A = -K;
-    EV = min(abs(real(eig(A))));
     err = 0.067; % Set this to desired degree of accuracy
-    t_ss = log(100/err)/EV;
+    t_ss = log(100/err)/real(eigs(K,1,'smallestreal'));
 
     %%%%%%%%%%% Approach 2  %%%%%%%%%%%
     % Construct a state-space model of the system (LTI system)

@@ -17,13 +17,12 @@ function t_ss = calc_t_ss(T1,T2,w1,dw)
 % x = ln(100/error), error in percentage (represents desired accuracy)
 % EV = min(abs(real(eig(A))))
 
-A = [-1/T2 dw 0;...
-    -dw -1/T2 w1;...
-    0 -w1 -1/T1];
+A = [1/T2 -dw 0;...
+    dw 1/T2 -w1;...
+    0 w1 1/T1];
 
-EV = min(abs(real(eig(A))));
 err = 0.005; % Set this to desired degree of accuracy
-t_ss = log(100/err)/EV;
+t_ss = log(100/err)/real(eigs(A,1,'smallestreal'));
 
 %%%%%%%%%%% Approach 2  %%%%%%%%%%%
 % Contstruct a state-space model of the system (LTI system)
@@ -39,8 +38,8 @@ t_ss = log(100/err)/EV;
 % where y = Mz is the output, C = [0 0 1], D = 0.
 
 % A = [-1/T2 dw 0;
-    -dw -1/T2 w1;
-    0 -w1 -1/T1];
+%     -dw -1/T2 w1;
+%     0 -w1 -1/T1];
 % B = [0 0 1/T1]';
 % C = [0 0 1];
 % D = 0;

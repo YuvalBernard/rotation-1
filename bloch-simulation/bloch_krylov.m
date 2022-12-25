@@ -17,20 +17,20 @@ function [Mz,Mx,My] = bloch_krylov(T1,T2,w1,dw,t0,tmax,q)
 % exp(-K*t) can be expressed as V*exp(-D*t)/V
 % where [V,D] = eig(K).
 
-Mz0 = 1; % initial z-magnetization
 t = t0:(tmax-t0)/(q-1):tmax;
 % Define propagation matrix
 K = [-1/T2 dw 0;
       -dw -1/T2 w1;
       0 -w1 -1/T1];
 % Define initial magnetization vector
-M0 = [0 0 Mz0]';
+M0 = [0; 0; 1];
+b = M0/T1;
 % Calculate solid-state values. In steady state the differential equation
 % reduces to solving the system of linear equations: K*M = M0/T1.
 
 M = zeros(3,q);
 for i = 1:q
-    M(:,i) = phiv( t(i), K, M0/T1, M0 );
+    M(:,i) = phiv(t(i),K,b,M0);
 end
 Mz = M(3,:);
 My = M(2,:);

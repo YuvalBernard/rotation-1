@@ -39,11 +39,11 @@ function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,vara
 R1a = 1/T1a; R2a = 1/T2a;
 R1b = 1/T1b; R2b = 1/T2b;
 ka = kb*M0b/M0a; % Given from mass equality on both sides of exchange chemical equation
-b = [0 0 R1a*M0a 0 0 R1b*M0b]';
+b = [0; 0; R1a*M0a; 0; 0; R1b*M0b];
 if ~isempty(varargin) % Obtain RF pulse duration if given
     tp = varargin{1};
 end
-M0 = [0 0 M0a 0 0 M0b]';
+M0 = [0; 0; M0a; 0; 0; M0b];
 Z = zeros(size(dwa));
 % if dwa is not symmetric wrt 0, calculate A via the same method of Z
 if dwa(end) ~= -dwa(1)
@@ -89,12 +89,12 @@ if nargout < 4 % No dynamics analysis (t_ss) requested.
         end
 
         if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
-            K_ = -[-(R2a+ka) -dwa(j) 0 kb 0 0;
+            K_ = -sparse([-(R2a+ka) -dwa(j) 0 kb 0 0;
             dwa(j) -(R2a+ka) w1 0 kb 0;
             0 -w1 -(R1a+ka) 0 0 kb;
             ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
             0 ka 0 -(-dwa(j)+db) -(R2b+kb) w1;
-            0 0 ka 0 -w1 -(R1b+kb)];
+            0 0 ka 0 -w1 -(R1b+kb)]);
 
             M_ss_ = K_\b;
 
