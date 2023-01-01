@@ -48,7 +48,7 @@ w1 = 512; % Hz
 T1a = 1; T2a = 0.2; % s
 T1b = 0.1; T2b = 0.1; % s
 M0a = 1; M0b = 0.0003636;
-[Z,A,domain] = CEST_krylov(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
+[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1);
 
 plot(dwa,Z,dwa(1:domain),A)
 ax = gca;
@@ -72,3 +72,15 @@ end
 ax = gca;
 ax.XDir = 'reverse';
 legend(h(1:end))
+%% Comparing with published data
+% DOI: 10.1073/pnas.0700281104 
+clc;clear;close all;
+T1a = 3; T2a = 60e-3; % s
+T1b = 1; T2b = 8.5e-3; % s
+M0a = 1; M0b = 0.0033; % arb
+kb = 50; % s^-1
+w1 = 42.58*1.5; % Hz (irradiation intensity)
+dwa = -760:38:760; % Hz (Saturation at given freqs)
+db = -400; % offset between wa and wb; dwb = dwa + db
+[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,0.01);
+plot(dwa/(42.58*4.7),Z,'k'); ax = gca; ax.XDir = 'reverse';
