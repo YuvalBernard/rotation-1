@@ -16,7 +16,7 @@ T1a = 3; T2a = 2; % s
 T1b = 770e-3; T2b = 33e-3; % s
 M0a = 1; M0b = M0a*1e-3; % arb
 kb = 200; % Hz
-dwa = 1000:-10:-1000; % Hz (Saturation at given freqs)
+dwa = 1000:-1:-1000; % Hz (Saturation at given freqs)
 db = -700; % offset between wa and wb; dwb = dwa + db
 w1 = [1 2 3]*42.58; % Hz
 h = zeros(length(w1),1);

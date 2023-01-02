@@ -73,14 +73,14 @@
 
 function [w, err] = phiv( t, A, u, v, tol, m )
 
-[n,n] = size(A);
-if nargin == 4,
+[~,n] = size(A);
+if nargin == 4
   tol = 1.0e-7;
   m = min(n,30);
-end;
-if nargin == 5,
+end
+if nargin == 5
   m = min(n,30);
-end;
+end
 
 anorm = norm(A,'inf'); 
 mxrej = 10;  btol  = 1.0e-7; 
@@ -98,11 +98,11 @@ while t_now < t_out
   V(:,1) = A*w + u;
   beta = norm(V(:,1));
   V(:,1) = (1/beta)*V(:,1);
-  if istep == 0, 
+  if istep == 0 
      fact = (((m+1)/exp(1))^(m+1))*sqrt(2*pi*(m+1));
      t_new = (1/anorm)*((fact*tol)/(4*beta*anorm))^xm;
      s = 10^(floor(log10(t_new))-1); t_new = ceil(t_new/s)*s; 
-  end;
+  end
   istep = istep + 1;
   t_step = min( t_out-t_now,t_new );
   for j = 1:m
@@ -110,28 +110,28 @@ while t_now < t_out
      for i = 1:j
         H(i,j) = V(:,i)'*p;
         p = p-H(i,j)*V(:,i);
-     end;
+     end
      s = norm(p); 
-     if s < btol,
+     if s < btol
         k1 = 0;
         mb = j;
         t_step = t_out-t_now;
         break;
-     end;
+     end
      H(j+1,j) = s;
      V(:,j+1) = (1/s)*p;
-  end; 
+  end
   H(1,mb+1) = 1; 
-  if k1 ~= 0, 
+  if k1 ~= 0 
      H(m+1,m+2) = 1; H(m+2,m+3) = 1;
      h = H(m+1,m); H(m+1,m) = 0;
      avnorm = norm(A*V(:,m+1)); 
-  end;
+  end
   ireject = 0;
-  while ireject <= mxrej,
+  while ireject <= mxrej
      mx = mb + max(1,k1);
      F = expm(sgn*t_step*H(1:mx,1:mx));
-     if k1 == 0,
+     if k1 == 0
 	err_loc = btol; 
         break;
      else
@@ -139,29 +139,29 @@ while t_now < t_out
         F(m+2,m+1) = h*F(m,m+3);
         p1 = abs( beta*F(m+1,m+1) );
         p2 = abs( beta*F(m+2,m+1) * avnorm );
-        if p1 > 10*p2,
+        if p1 > 10*p2
            err_loc = p2;
            xm = 1/m;
-        elseif p1 > p2,
+        elseif p1 > p2
            err_loc = (p1*p2)/(p1-p2);
            xm = 1/m;
         else
            err_loc = p1;
            xm = 1/(m-1);
-        end;
-     end;
-     if err_loc <= delta * t_step*tol,
+        end
+     end
+     if err_loc <= delta * t_step*tol
         break;
      else
         t_step = gamma * t_step * (t_step*tol/err_loc)^xm;
         s = 10^(floor(log10(t_step))-1);
         t_step = ceil(t_step/s) * s;
-        if ireject == mxrej,
+        if ireject == mxrej
            error('The requested tolerance is too high.');
-        end;
+        end
         ireject = ireject + 1;
-     end;
-  end;
+     end
+  end
   mx = mb + max( 0,k1-2 );
   w = V(:,1:mx)*(beta*F(1:mx,mb+1)) + w;
   
@@ -172,6 +172,6 @@ while t_now < t_out
 
   err_loc = max(err_loc,rndoff);
   s_error = s_error + err_loc;
-end;
+end
 err = s_error;
 
