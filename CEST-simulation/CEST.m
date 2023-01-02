@@ -89,22 +89,14 @@ if nargout < 4 % No dynamics analysis (t_ss) requested.
         end
 
         if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
-<<<<<<< HEAD
-            K_ = -sparse([-(R2a+ka) -dwa(j) 0 kb 0 0;
-            dwa(j) -(R2a+ka) w1 0 kb 0;
-            0 -w1 -(R1a+ka) 0 0 kb;
-            ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
-            0 ka 0 -(-dwa(j)+db) -(R2b+kb) w1;
-            0 0 ka 0 -w1 -(R1b+kb)]);
-=======
+
             K_ = [(R2a+ka) dwa(j) 0 -kb 0 0;
             -dwa(j) (R2a+ka) -w1 0 -kb 0;
             0 w1 (R1a+ka) 0 0 -kb;
             -ka 0 0 (R2b+kb) -(-dwa(j)+db) 0;
             0 -ka 0 (-dwa(j)+db) (R2b+kb) -w1;
             0 0 -ka 0 w1 (R1b+kb)];
->>>>>>> origin/master
-
+        
             M_ss_ = K_\b;
 
             if isempty(varargin) % Full saturation assumed
