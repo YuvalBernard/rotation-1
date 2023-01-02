@@ -7,7 +7,7 @@ function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,vara
 % between pool a (water/bulk) and pool b (labile H/solute).
 
 % Output is the Z and A values corresponding
-% to Z = Mza(dwa)/M0a and A = [Mzb(-dwa) - Mzb(dwa)]/M0a
+% to Z = Mza(dwa)/M0a and A = [Mza(-dwa) - Mza(dwa)]/M0a
 % which can be used to plot Z and MTR_Assymetry spectra.
 
 % Calculation of Z and A spectra is available for both full and partial
@@ -72,12 +72,12 @@ end
 if nargout < 4 % No dynamics analysis (t_ss) requested.
     for j = 1:length(dwa)
 
-        K = -[-(R2a+ka) dwa(j) 0 kb 0 0;
-            -dwa(j) -(R2a+ka) w1 0 kb 0;
-            0 -w1 -(R1a+ka) 0 0 kb;
-            ka 0 0 -(R2b+kb) (dwa(j)+db) 0;
-            0 ka 0 -(dwa(j)+db) -(R2b+kb) w1;
-            0 0 ka 0 -w1 -(R1b+kb)];
+        K = [(R2a+ka) -dwa(j) 0 -kb 0 0;
+            dwa(j) (R2a+ka) -w1 0 -kb 0;
+            0 w1 (R1a+ka) 0 0 -kb;
+            -ka 0 0 (R2b+kb) -(dwa(j)+db) 0;
+            0 -ka 0 (dwa(j)+db) (R2b+kb) -w1;
+            0 0 -ka 0 w1 (R1b+kb)];
 
         M_ss = K\b;
 
@@ -89,12 +89,21 @@ if nargout < 4 % No dynamics analysis (t_ss) requested.
         end
 
         if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
+<<<<<<< HEAD
             K_ = -sparse([-(R2a+ka) -dwa(j) 0 kb 0 0;
             dwa(j) -(R2a+ka) w1 0 kb 0;
             0 -w1 -(R1a+ka) 0 0 kb;
             ka 0 0 -(R2b+kb) (-dwa(j)+db) 0;
             0 ka 0 -(-dwa(j)+db) -(R2b+kb) w1;
             0 0 ka 0 -w1 -(R1b+kb)]);
+=======
+            K_ = [(R2a+ka) dwa(j) 0 -kb 0 0;
+            -dwa(j) (R2a+ka) -w1 0 -kb 0;
+            0 w1 (R1a+ka) 0 0 -kb;
+            -ka 0 0 (R2b+kb) -(-dwa(j)+db) 0;
+            0 -ka 0 (-dwa(j)+db) (R2b+kb) -w1;
+            0 0 -ka 0 w1 (R1b+kb)];
+>>>>>>> origin/master
 
             M_ss_ = K_\b;
 
