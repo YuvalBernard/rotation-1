@@ -1,5 +1,29 @@
 % CEST and DEST simulations (Slides from 19.12.22)
 
+
+%% Lithium CEST: Reconstruct experimental results
+% LP30 @ 298
+clc;clear;close all;
+
+gamma = 16.546; % MHz/T; gyromagnetic ratio
+B0 = 9.4; % T
+w0 = gamma*B0;
+
+T1a = 1/6.9; T2a = 1/1400;
+T1b = 100; T2b = 1/(20e3);
+kb = 64;
+w1 = [500; 1000; 1500; 2000];
+dwa = 500*w0:-w0:-500*w0;
+db = 260*w0;
+fb = 0.02;
+
+figure;
+for i = 1:length(w1)
+    Z = CEST(T1a,T2a,T1b,T2b,kb,1,fb,dwa,db,w1(i),0.2);
+    hold on
+    ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
+    plot(dwa/w0,Z);
+end
 %% Lithium CEST
 clc;clear;close all;
 % Interaction between Li dendrites (free) and SEI (bound)
@@ -9,35 +33,35 @@ B0 = 9.4; % T
 w0 = gamma*B0;
 
 % System parameters:
-T1a = [10; 100]; T2a = 1/(pi*35); % s
-T1b = 150e-3; T2b = 0.5e-3; % s
-M0a = 1; M0b = M0a*5e-3; % arb
+T1a = 150e-3; T2a = 0.5e-3; % s
+T1b = [10; 100]; T2b = 1/(35e3); % s
+M0a = 1; M0b = 0.02; % arb
 kb = [10;50;100;500;1000]; % Hz Select values between 10-1000 Hz
 w1 = 750; % Hz (irradiation intensity)
-dwa = 2000*w0:-w0:-2000*w0; % Hz (Saturation at given freqs)
+dwa = 500*w0:-w0:-500*w0; % Hz (Saturation at given freqs)
 db = -260*w0; % offset between wa and wb; dwb = dwa + db
 
 % Calculate spectra and plot results
 figure
-t = tiledlayout(2,length(T1a));
+t = tiledlayout(2,length(T1b));
 t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Lithium CEST: Dendrites + SEI',...
     ['measure at +-500ppm, \omega_1 = ',num2str(w1),' Hz'])
 xlabel(t,'\Delta\omega_a [Hz]')
 h = zeros(length(w1),1);
 
-for j=1:length(T1a)
+for j=1:length(T1b)
     for i=1:length(kb)
         ax1 = nexttile(j);
-        [Z,A,domain] = CEST(T1a(j),T2a,T1b,T2b,kb(i),M0a,M0b,dwa,db,w1);
+        [Z,A,domain] = CEST(T1a,T2a,T1b(j),T2b,kb(i),M0a,M0b,dwa,db,w1,0.2);
         xline([500 -500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
+        title(strcat('T_{1b}=',num2str(T1b(j)), 's'))
         hold on
         ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
         plot(dwa,Z);
         ax2 = nexttile(j+2);
         xline([500 -500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
+        title(strcat('T_{1b}=',num2str(T1b(j)), 's'))
         hold on;
         ylabel('A Spectra');ylim([0 0.8]); ax = gca; ax.XDir = 'reverse';
         h(i) = plot(dwa(1:domain),A,'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));

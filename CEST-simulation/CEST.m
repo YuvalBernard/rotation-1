@@ -1,4 +1,4 @@
-function [Z,A,domain,varargout] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,varargin)
+function [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,varargin)
 % Simulation of Bloch-McConnell equations
 % by solving differential equations in the
 % rotating frame.
@@ -65,60 +65,50 @@ if dwa(end) ~= -dwa(1)
             domain = length(dwa) - idx;
         end
     end
-       
+
     A = zeros(1,domain); % Initialize A
 end
 
-if nargout < 4 % No dynamics analysis (t_ss) requested.
-    for j = 1:length(dwa)
+for j = 1:length(dwa)
 
-        K = [(R2a+ka) -dwa(j) 0 -kb 0 0;
-            dwa(j) (R2a+ka) -w1 0 -kb 0;
-            0 w1 (R1a+ka) 0 0 -kb;
-            -ka 0 0 (R2b+kb) -(dwa(j)+db) 0;
-            0 -ka 0 (dwa(j)+db) (R2b+kb) -w1;
-            0 0 -ka 0 w1 (R1b+kb)];
+    K = [(R2a+ka) -dwa(j) 0 -kb 0 0;
+        dwa(j) (R2a+ka) -w1 0 -kb 0;
+        0 w1 (R1a+ka) 0 0 -kb;
+        -ka 0 0 (R2b+kb) -(dwa(j)+db) 0;
+        0 -ka 0 (dwa(j)+db) (R2b+kb) -w1;
+        0 0 -ka 0 w1 (R1b+kb)];
 
-        M_ss = K\b;
+    M_ss = K\b;
 
-        if isempty(varargin) % Full saturation assumed
-            Z(j) = M_ss(3)/M0a;
-        else % Calculate Z for given tp
-            M_tp = fastExpm(-K*tp)*(M0 - M_ss) + M_ss;
-            Z(j) = M_tp(3)/M0a;
-        end
+    if isempty(varargin) % Full saturation assumed
+        Z(j) = M_ss(3)/M0a;
+    else % Calculate Z for given tp
+        M_tp = fastExpm(-K*tp)*(M0 - M_ss) + M_ss;
+        Z(j) = M_tp(3)/M0a;
+    end
 
-        if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
+    if dwa(end) ~= -dwa(1) && j >= idx && j <= idx+domain
 
-            K_ = [(R2a+ka) dwa(j) 0 -kb 0 0;
+        K_ = [(R2a+ka) dwa(j) 0 -kb 0 0;
             -dwa(j) (R2a+ka) -w1 0 -kb 0;
             0 w1 (R1a+ka) 0 0 -kb;
             -ka 0 0 (R2b+kb) -(-dwa(j)+db) 0;
             0 -ka 0 (-dwa(j)+db) (R2b+kb) -w1;
             0 0 -ka 0 w1 (R1b+kb)];
-        
-            M_ss_ = K_\b;
 
-            if isempty(varargin) % Full saturation assumed
-                A(j) = (M_ss_(3) - M_ss(3))/M0a;
-            else % Calculate A for given tp
-                M_tp_ = fastExpm(-K_*tp)*(M0 - M_ss_) + M_ss_;
-                A(j) = (M_tp_(3) - M_tp(3))/M0a;
-            end
+        M_ss_ = K_\b;
+
+        if isempty(varargin) % Full saturation assumed
+            A(j) = (M_ss_(3) - M_ss(3))/M0a;
+        else % Calculate A for given tp
+            M_tp_ = fastExpm(-K_*tp)*(M0 - M_ss_) + M_ss_;
+            A(j) = (M_tp_(3) - M_tp(3))/M0a;
         end
     end
-    if dwa(end) == -dwa(1)
-        %  Assuming the domain is symmetric
-        domain = round(length(dwa)/2);
-        A = fliplr(Z(domain:end)) - Z(1:domain);
-    end
-    return
 end
-if nargout > 3
-    % We're asked to calculate t_ss. return table of t_sat and t_ss
-    % t_ssa = zeros(size(dwb));
-    % tsatb = zeros(size(dwb));
-    %
-    % t_ss = table(t_satb,t_ssa,'VariableNames',{'t^a_{ss}','t^b_{sat}'});
-    varargout{4} = t_ss;
+if dwa(end) == -dwa(1)
+    %  Assuming the domain is symmetric
+    domain = round(length(dwa)/2);
+    A = fliplr(Z(domain:end)) - Z(1:domain);
 end
+return

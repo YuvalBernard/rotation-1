@@ -28,6 +28,14 @@
     <frac|\<mathd\>|dt><bmatrix|<tformat|<table|<row|<cell|<around*|[|A|]>>>|<row|<cell|<around*|[|B|]>>>|<row|<cell|<around*|[|C|]>>>>>>=<bmatrix|<tformat|<table|<row|<cell|-<around*|(|k<rsub|ab>+k<rsub|ac>|)>>|<cell|k<rsub|ba>>|<cell|k<rsub|ca>>>|<row|<cell|k<rsub|ab>>|<cell|-k<rsub|ba>>|<cell|0>>|<row|<cell|k<rsub|ac>>|<cell|0>|<cell|-k<rsub|ca>>>>>>
   </equation*>
 
+  <\with|color|#a0a0a0>
+    See pattern: (5 pools for example)
+
+    <\equation*>
+      <frac|\<mathd\>|\<mathd\>t><bmatrix|<tformat|<table|<row|<cell|<around*|[|A|]>>>|<row|<cell|<around*|[|B|]>>>|<row|<cell|<around*|[|C|]>>>|<row|<cell|<around*|[|D|]>>>|<row|<cell|<around*|[|E|]>>>>>>=<bmatrix|<tformat|<table|<row|<cell|-<around*|(|k<rsub|ab>+k<rsub|ac>+k<rsub|ad>+k<rsub|ae>|)>>|<cell|k<rsub|ba>>|<cell|k<rsub|ca>>|<cell|k<rsub|da>>|<cell|k<rsub|ea>>>|<row|<cell|k<rsub|ab>>|<cell|-k<rsub|ba>>|<cell|0>|<cell|0>|<cell|0>>|<row|<cell|k<rsub|ac>>|<cell|0>|<cell|-k<rsub|ca>>|<cell|0>|<cell|0>>|<row|<cell|k<rsub|ad>>|<cell|0>|<cell|0>|<cell|-k<rsub|da>>|<cell|0>>|<row|<cell|k<rsub|ae>>|<cell|0>|<cell|0>|<cell|0>|<cell|-k<rsub|eq>>>>>>
+    </equation*>
+  </with>
+
   The magnetization space vector representing magnatization of the pools is
   given by:
 
