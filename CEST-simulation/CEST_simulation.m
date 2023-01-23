@@ -32,7 +32,7 @@ ax = gca; ax.XDir = 'reverse'; legend(h(1:end))
 clc;clear;close all;
 
 Pa = struct('T1',3,'T2',2);
-Pb = struct('T1',770e-3,'T2',33e-3,'f',1e-3,'k',200,'dw',-700);
+Pb = struct('T1',770e-3,'T2',33e-3,'f',1e-3,'k',200,'dw',700);
 sys = struct('offsets',1000:-10:-1000,'tp',10);
 w1 = [1 2 3]*42.58; % Hz
 h = zeros(length(w1),1);
@@ -57,35 +57,24 @@ legend(h(1:end))
 % Insights Into the Optimum Design of PARACEST Agents
 % for MRI".
 % Goal: Obtain similar results to Fig 1.
-clc;clear;close all;
-kb = 500; % Hz
-dwa = 30000:-100:-10000; % Hz
-db = -20000;
-w1 = 512; % Hz
-T1a = 1; T2a = 0.2; % s
-T1b = 0.1; T2b = 0.1; % s
-M0a = 1; M0b = 0.0003636;
-[Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1,10);
-
-plot(dwa,Z,dwa(1:domain),A)
-ax = gca;
-ax.XDir = 'reverse';
+clc;clear; close all
+Pa = struct('T1',1,'T2',0.2); % s
+Pb = struct('T1',0.1,'T2',0.1,'f',0.0003636,'k',500,'dw',20000);
+sys = struct('w1',512,'tp',10,'offsets',30e3:-100:-10e3);
+Z = CEST_multipool(sys,Pa,Pb);
+plot(sys.offsets,Z); set(gca,'XDir','reverse')
 %% Alter kb
-clc;clear;close all;
+clc;clear;
 kb = [300 500 900 3000 7000 9000]; % Hz
-dwa = 30000:-100:-10000; % Hz
-db = -20000;
-w1 = 512; % Hz
-T1a = 2; T2a = 0.2; % s
-T1b = 0.1; T2b = 0.1; % s
-M0a = 1; M0b = 0.0003636;
+Pa = struct('T1',0.5,'T2',0.2); % s
+Pb = struct('T1',0.1,'T2',0.1,'f',0.0003636,'dw',20000);
+sys = struct('w1',512,'tp',10,'offsets',30e3:-100:-10e3);
 colors = lines(length(kb));
 h = zeros(length(kb),1);
 for i=1:length(kb)
-    Z = CEST(T1a,T2a,T1b,T2b,kb(i),M0a,M0b,dwa,db,w1);
-    h(i) = plot(dwa,Z,'color',colors(i,:),'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
+    Pb.k = kb(i);
+    plot(sys.offsets,CEST_multipool(sys,Pa,Pb),'color',colors(i,:),'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
     hold on
 end
-ax = gca;
-ax.XDir = 'reverse';
-legend(h(1:end))
+set(gca,'XDir','reverse')
+legend

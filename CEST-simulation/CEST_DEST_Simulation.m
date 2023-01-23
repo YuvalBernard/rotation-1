@@ -10,7 +10,7 @@ B0 = 9.4; % T
 w0 = gamma*B0; % in MHz
 
 dendrite = struct('T1',1/7,'T2',1/1456);
-SEI = struct('T1',100,'T2',1/(15e3),'k',285,'f',0.02,'dw',260*w0);
+SEI = struct('T1',100,'T2',1/(28e3),'k',91,'f',0.02,'dw',-260*w0);
 sys = struct('offsets',(500:-1:-500)*w0,'tp',0.2);
 w1 = [500; 1000; 1500; 2000];
 
@@ -22,7 +22,29 @@ for i = 1:length(w1)
     ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
     plot(sys.offsets/w0,Z);
 end
-% f.Position = [1091,572,273,291];
+
+%%
+% LP30 @ 323K
+clc;clearvars gamma B0 w0 dendrite SEI sys w1; close all
+
+gamma = 16.546; % MHz/T; gyromagnetic ratio
+B0 = 9.4; % T
+w0 = gamma*B0; % in MHz
+
+dendrite = struct('T1',1/8,'T2',1/393);
+SEI = struct('T1',100,'T2',1/(28e3),'k',285,'f',0.02,'dw',-260*w0);
+sys = struct('offsets',(500:-1:-500)*w0,'tp',0.2);
+w1 = [500; 1000; 1500; 2000];
+
+f = figure;
+for i = 1:length(w1)
+    sys.w1 = w1(i);    
+    Z = CEST_multipool(sys,dendrite,SEI);
+    hold on
+    ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
+    plot(sys.offsets/w0,Z);
+end
+f.Position = [721,311,304.5,331.5];
 %% Lithium CEST
 clc;clear;close all;
 % Interaction between Li dendrites (free) and SEI (bound)
