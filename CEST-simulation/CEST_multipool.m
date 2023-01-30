@@ -71,15 +71,15 @@ for j = 1:N
     A = K + kron(eye(n),[0 -offsets(j) 0;
                         offsets(j) 0 0;
                         0 0 0]);
-    
+%     
     % Calculate steady-state magnetization according to Bloch McConnell
     % equations
-    M_ss = -A\b;
+    % If System.tp is not given, no need to save M_ss locally.
     if ~isfield(System,'tp') % Full saturation assumed
-        Z(j) = M_ss(3);
+        Z(j) = parenth(-A\b,3);
     else % Calculate Z for given tp
-        M_tp = fastExpm(A * System.tp)*(M0 - M_ss) + M_ss;
-        Z(j) = M_tp(3);
+        M_ss = -A\b;
+        Z(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3);
     end
 end
 
@@ -100,11 +100,15 @@ for j = 1:N
     
     % Calculate steady-state magnetization according to Bloch McConnell
     % equations
-    M_ss = -A\b;
+    
     if ~isfield(System,'tp') % Full saturation assumed
-        MTR(j) = M_ss(3) - Z(j);
+        MTR(j) = parenth(-A\b,3) - Z(j);
     else % Calculate Z for given tp
-        M_tp = fastExpm(A * System.tp)*(M0 - M_ss) + M_ss;
-        MTR(j) = M_tp(3) - Z(j);
+        M_ss = -A\b;
+        MTR(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3) - Z(j);
     end
+end
+end
+function out = parenth(x, varargin)
+    out = x(varargin{:});
 end

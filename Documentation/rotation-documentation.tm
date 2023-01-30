@@ -1,4 +1,4 @@
-<TeXmacs|2.1>
+<TeXmacs|2.1.2>
 
 <style|<tuple|generic|SIUnits-simple>>
 
@@ -85,6 +85,19 @@
 
       <item>DIY.
     </itemize>
+  </enumerate>
+
+  \;
+
+  Notes: 30.01.23
+
+  TODO:
+
+  <\enumerate>
+    <item>Run CEST and DEST simulations as specified in PPT slides.
+
+    <item>Delve into nonlinear fitting. In a month, think about a research
+    proposal.
   </enumerate>
 </body>
 

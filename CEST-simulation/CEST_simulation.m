@@ -1,17 +1,15 @@
 clc;clear;close all;
 
 Pa = struct('T1',3,'T2',2);
-Pb = struct('T1',770e-3,'T2',33e-3,'f',1e-3,'k',200,'dw',-700);
+Pb = struct('T1',770e-3,'T2',33e-3,'f',1e-3,'k',200,'dw',700);
 sys = struct('w1',3*42.58,'offsets',1000:-10:-1000,'tp',10);
 
 [Z,MTR] = CEST_multipool(sys,Pa,Pb);
 plot(sys.offsets, Z,'r-'); ax = gca; ax.XDir = 'reverse';
 hold on
-Pb.f = 0;
-Z_ref = CEST_multipool(sys,Pa,Pb);
-plot(sys.offsets, Z_ref,'b-');
-plot(sys.offsets,Z_ref-Z,'m--')
 plot(sys.offsets,MTR,'c.')
+[x,y] = asym_PS(sys.offsets,Z);
+plot(x,y)
 
 %% Change kb
 clc;clear;close all;
@@ -69,11 +67,10 @@ kb = [300 500 900 3000 7000 9000]; % Hz
 Pa = struct('T1',0.5,'T2',0.2); % s
 Pb = struct('T1',0.1,'T2',0.1,'f',0.0003636,'dw',20000);
 sys = struct('w1',512,'tp',10,'offsets',30e3:-100:-10e3);
-colors = lines(length(kb));
 h = zeros(length(kb),1);
 for i=1:length(kb)
     Pb.k = kb(i);
-    plot(sys.offsets,CEST_multipool(sys,Pa,Pb),'color',colors(i,:),'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
+    plot(sys.offsets,CEST_multipool(sys,Pa,Pb),'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
     hold on
 end
 set(gca,'XDir','reverse')

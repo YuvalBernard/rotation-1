@@ -1,7 +1,7 @@
 % CEST and DEST simulations (Slides from 19.12.22)
 
 
-%% Lithium CEST: Reconstruct experimental results
+%% Lithium CEST: Reconstruct experimental results:  DOI: 10.1021/jacs.2c02494 
 % LP30/FEC @ 298K
 clc;clearvars gamma B0 w0 dendrite SEI sys w1; close all
 
@@ -44,7 +44,7 @@ for i = 1:length(w1)
     ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
     plot(sys.offsets/w0,Z);
 end
-f.Position = [721,311,304.5,331.5];
+% f.Position = [721,311,304.5,331.5];
 %% Lithium CEST
 clc;clear;close all;
 % Interaction between Li dendrites (free) and SEI (bound)
@@ -54,41 +54,30 @@ B0 = 9.4; % T
 w0 = gamma*B0;
 
 % System parameters:
-T1a = 150e-3; T2a = 0.5e-3; % s
-T1b = [10; 100]; T2b = 1/(35e3); % s
-M0a = 1; M0b = 0.02; % arb
-kb = [10;50;100;500;1000]; % Hz Select values between 10-1000 Hz
-w1 = 750; % Hz (irradiation intensity)
-dwa = 500*w0:-w0:-500*w0; % Hz (Saturation at given freqs)
-db = -260*w0; % offset between wa and wb; dwb = dwa + db
-
+dendrite = struct('T1',150e-3,'T2',0.5e-3);
+SEI = struct('T1',[10,100],'T2',1/(35e3),'f',0.02,'dw',-260*w0);
+sys = struct('w1',750,'tp',0.2,'offsets',linspace(-500,500,1000)*w0);
+SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
 figure
-t = tiledlayout(2,length(T1b));
+t = tiledlayout(1,length(SEI_T1));
 t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Lithium CEST: Dendrites + SEI',...
-    ['measure at +-500ppm, \omega_1 = ',num2str(w1),' Hz'])
-xlabel(t,'\Delta\omega_a [Hz]')
-h = zeros(length(w1),1);
-
-for j=1:length(T1b)
-    for i=1:length(kb)
-        ax1 = nexttile(j);
-        [Z,A,domain] = CEST(T1a,T2a,T1b(j),T2b,kb(i),M0a,M0b,dwa,db,w1,0.2);
-        xline([500 -500]*w0,'--');
-        title(strcat('T_{1b}=',num2str(T1b(j)), 's'))
+    ['measure at +-500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
+xlabel(t,'\Delta\omega [ppm]')
+h = zeros(size(SEI_k));
+nexttile
+for j=1:length(SEI_T1)
+    SEI.T1 = SEI_T1(j);
+    for i=1:length(SEI_k)
+        SEI.k = SEI_k(i);
+        title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
-        ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
-        plot(dwa,Z);
-        ax2 = nexttile(j+2);
-        xline([500 -500]*w0,'--');
-        title(strcat('T_{1b}=',num2str(T1b(j)), 's'))
-        hold on;
-        ylabel('A Spectra');ylim([0 0.8]); ax = gca; ax.XDir = 'reverse';
-        h(i) = plot(dwa(1:domain),A,'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
-        legend(h(1:end),'Location','best')
-        linkaxes([ax1,ax2],'x');
+        ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
+        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,dendrite,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
+    legend(h(1:end),'Location','Southeast');
+    nexttile
 end
 %% Lithium DEST
 % Interaction between electrolyte (Li in organic solvent) and SEI (bound)
@@ -98,43 +87,31 @@ B0 = 9.4; % T
 w0 = gamma*B0;
 
 % System parameters:
-T1a = [10; 100]; T2a = 0.1e-3; % s
-T1b = 2.2; T2b = 0.4; % s
-M0a = 1; M0b = M0a*5e-3; % arb
-kb = [10;50;100;1000;2000]; % s^-1 Select values between 10-1000 Hz
-w1 = 750; % Hz (irradiation intensity)
-dwa = 2000*w0:-w0:-2000*w0; % Hz (Saturation at given freqs)
-db = 0; % offset between wa and wb; dwb = dwa + db
-
+electrolyte = struct('T1',2.2,'T2',0.4);
+SEI = struct('T1',[10,100],'T2',0.1e-3,'f',0.02,'dw',0);
+sys = struct('w1',750,'tp',5,'offsets',linspace(-500,500,5000)*w0);
+SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
 figure
-t = tiledlayout(2,length(T1a));
-t.TileSpacing = 'compact';
+t = tiledlayout(1,length(SEI_T1));
+t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Lithium DEST: Electrolyte + SEI',...
-    ['measure at +-500ppm, \omega_1 = ',num2str(w1),' Hz'])
-xlabel(t,'\Delta\omega_a [Hz]')
-h = zeros(length(w1),1);
-
-for j=1:length(T1a)
-    for i=1:length(kb)
-        ax1 = nexttile(j);
-        [Z,A,domain] = CEST(T1a(j),T2a,T1b,T2b,kb(i),M0a,M0b,dwa,db,w1);
-        xline([500 -500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
+    ['measure at +-500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
+xlabel(t,'\Delta\omega [ppm]')
+h = zeros(size(SEI_k));
+nexttile
+for j=1:length(SEI_T1)
+    SEI.T1 = SEI_T1(j);
+    for i=1:length(SEI_k)
+        SEI.k = SEI_k(i);
+        title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
-        ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
-        plot(dwa,Z);
-        ax2 = nexttile(j+2);
-        xline([500 -500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
-        hold on;
-        ylabel('A Spectra');ylim([0 0.8]); ax = gca; ax.XDir = 'reverse';
-        h(i) = plot(dwa(1:domain),A,'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
-        legend(h(1:end),'Location','best')
-        linkaxes([ax1,ax2],'x');
+        ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
+        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,electrolyte,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
+    legend(h(1:end),'Location','Southeast');
+    nexttile
 end
-
 %% Sodium CEST
 clc;clear;close all;
 % Interaction between Na dendrites (free) and SEI (bound)
@@ -144,41 +121,30 @@ B0 = 9.4; % T
 w0 = gamma*B0;
 
 % System parameters:
-T1a = [10; 100]; T2a = 1/(pi*875); % s
-T1b = 10e-3; T2b = 4e-3; % s
-M0a = 1; M0b = M0a*5e-3; % arb
-kb = [10;50;100;500;1000]; % s^-1 Select values between 10-1000 Hz
-w1 = 750; % Hz (irradiation intensity)
-dwa = 2000*w0:-w0:-2000*w0; % Hz (Saturation at given freqs)
-db = -1100*w0; % offset between wa and wb; dwb = dwa + db
-
+dendrite = struct('T1',10e-3,'T2',4e-3);
+SEI = struct('T1',[10,100],'T2',1/(875e3),'f',0.02,'dw',-1100*w0);
+sys = struct('w1',750,'tp',5,'offsets',linspace(-1500,1500,5000)*w0);
+SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
 figure
-t = tiledlayout(2,length(T1a));
-t.TileSpacing = 'compact';
+t = tiledlayout(1,length(SEI_T1));
+t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Sodium CEST: Dendrites + SEI',...
-    ['measure at +-1500ppm, \omega_1 = ',num2str(w1),' Hz'])
-xlabel(t,'\Delta\omega_a [Hz]')
-h = zeros(length(w1),1);
-
-for j=1:length(T1a)
-    for i=1:length(kb)
-        ax1 = nexttile(j);
-        [Z,A,domain] = CEST(T1a(j),T2a,T1b,T2b,kb(i),M0a,M0b,dwa,db,w1);
-        xline([1500 -1500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
+    ['measure at +-1500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
+xlabel(t,'\Delta\omega [ppm]')
+h = zeros(size(SEI_k));
+nexttile
+for j=1:length(SEI_T1)
+    SEI.T1 = SEI_T1(j);
+    for i=1:length(SEI_k)
+        SEI.k = SEI_k(i);
+        title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
-        ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
-        plot(dwa,Z);
-        ax2 = nexttile(j+2);
-        xline([1500 -1500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
-        hold on;
-        ylabel('A Spectra');ylim([0 0.8]); ax = gca; ax.XDir = 'reverse';
-        h(i) = plot(dwa(1:domain),A,'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
-        legend(h(1:end),'Location','best')
-        linkaxes([ax1,ax2],'x');
+        ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
+        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,dendrite,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
+    legend(h(1:end),'Location','Southeast');
+    nexttile
 end
 
 %% Soidum DEST
@@ -189,42 +155,32 @@ B0 = 9.4; % T
 w0 = gamma*B0;
 
 % System parameters:
-T1a = [10; 100]; T2a = 0.1e-3; % s
-T1b = 3.8e-3; T2b = 3.7e-3; % s
-M0a = 1; M0b = M0a*5e-3; % arb
-kb = [10;50;100;1000;2000]; % Hz Select values between 10-1000 Hz
-w1 = 500; % Hz (irradiation intensity)
-dwa = 2000*w0:-w0:-2000*w0; % Hz (Saturation at given freqs)
-db = 0; % offset between wa and wb; dwb = dwa + db
-
+electrolyte = struct('T1',3.8e-3,'T2',3.7e-3);
+SEI = struct('T1',[10,100],'T2',0.1,'f',0.02,'dw',0);
+sys = struct('w1',750,'tp',5,'offsets',linspace(-1500,1500,5000)*w0);
+SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
 figure
-t = tiledlayout(2,length(T1a));
-t.TileSpacing = 'compact';
+t = tiledlayout(1,length(SEI_T1));
+t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Sodium DEST: Electrolyte + SEI',...
-    ['measure at +-1500ppm, \omega_1 = ',num2str(w1),' Hz'])
-xlabel(t,'\Delta\omega_a [Hz]')
-h = zeros(length(w1),1);
-
-for j=1:length(T1a)
-    for i=1:length(kb)
-        ax1 = nexttile(j);
-        [Z,A,domain] = CEST(T1a(j),T2a,T1b,T2b,kb(i),M0a,M0b,dwa,db,w1);
-        xline([1500 -1500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
+    ['measure at +-1500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
+xlabel(t,'\Delta\omega [ppm]')
+h = zeros(size(SEI_k));
+nexttile
+for j=1:length(SEI_T1)
+    SEI.T1 = SEI_T1(j);
+    for i=1:length(SEI_k)
+        SEI.k = SEI_k(i);
+        title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
-        ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
-        plot(dwa,Z);
-        ax2 = nexttile(j+2);
-        xline([1500 -1500]*w0,'--');
-        title(strcat('T1a=',num2str(T1a(j)), 's'))
-        hold on;
-        ylabel('A Spectra');ylim([0 0.8]); ax = gca; ax.XDir = 'reverse';
-        h(i) = plot(dwa(1:domain),A,'DisplayName',strcat('kb= ',num2str(kb(i)),' Hz'));
-        legend(h(1:end),'Location','best')
-        linkaxes([ax1,ax2],'x');
+        ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
+        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,electrolyte,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
+    legend(h(1:end),'Location','Southeast');
+    nexttile
 end
+
 
 %% Limit Testing: Li CEST
 % Li CEST: What are the limits of the exchanges rates that can be measured
