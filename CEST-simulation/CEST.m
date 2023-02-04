@@ -43,6 +43,11 @@ b = [0; 0; R1a*M0a; 0; 0; R1b*M0b];
 if ~isempty(varargin) % Obtain RF pulse duration if given
     tp = varargin{1};
 end
+
+w1 = w1*2*pi;
+dwa = dwa*2*pi;
+db = db*2*pi;
+
 M0 = [0; 0; M0a; 0; 0; M0b];
 Z = zeros(size(dwa));
 % if dwa is not symmetric wrt 0, calculate A via the same method of Z

@@ -14,7 +14,7 @@ SEI = struct('T1',100,'T2',1/(28e3),'k',91,'f',0.02,'dw',-260*w0);
 sys = struct('offsets',(500:-1:-500)*w0,'tp',0.2);
 w1 = [500; 1000; 1500; 2000];
 
-f = figure;
+figure;
 for i = 1:length(w1)
     sys.w1 = w1(i);    
     Z = CEST_multipool(sys,dendrite,SEI);
@@ -36,7 +36,7 @@ SEI = struct('T1',100,'T2',1/(28e3),'k',285,'f',0.02,'dw',-260*w0);
 sys = struct('offsets',(500:-1:-500)*w0,'tp',0.2);
 w1 = [500; 1000; 1500; 2000];
 
-f = figure;
+f = figure('Visible','off');
 for i = 1:length(w1)
     sys.w1 = w1(i);    
     Z = CEST_multipool(sys,dendrite,SEI);
@@ -44,9 +44,10 @@ for i = 1:length(w1)
     ylabel('Z Spectra'); ylim([0 1]); ax = gca; ax.XDir = 'reverse';
     plot(sys.offsets/w0,Z);
 end
+set(f,'Visible','on')
 % f.Position = [721,311,304.5,331.5];
 %% Lithium CEST
-clc;clear;close all;
+clc;clearvars t sys SEI dendrite ;
 % Interaction between Li dendrites (free) and SEI (bound)
 % Experiment done on Li-7 spins at 9.4T
 gamma = 16.546; % MHz/T; gyromagnetic ratio
@@ -66,18 +67,20 @@ title(t,'Lithium CEST: Dendrites + SEI',...
     ['measure at +-500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
 xlabel(t,'\Delta\omega [ppm]')
 h = zeros(size(SEI_k));
-nexttile
 for j=1:length(SEI_T1)
     SEI.T1 = SEI_T1(j);
+    nexttile
     for i=1:length(SEI_k)
         SEI.k = SEI_k(i);
         title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
         ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
-        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,dendrite,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
+        [Z,MTR_asym] = CEST_multipool(sys,dendrite,SEI);
+        h(i) = plot(sys.offsets/w0,Z,'DisplayName',['k=',num2str(SEI.k),' Hz']);
+        plot(sys.offsets/w0,MTR_asym,'--')
     end
     legend(h(1:end),'Location','Southeast');
-    nexttile
+    
 end
 %% Lithium DEST
 % Interaction between electrolyte (Li in organic solvent) and SEI (bound)
@@ -88,30 +91,32 @@ w0 = gamma*B0;
 
 % System parameters:
 electrolyte = struct('T1',2.2,'T2',0.4);
-SEI = struct('T1',[10,100],'T2',0.1e-3,'f',0.02,'dw',0);
+SEI = struct('T1',[10,100],'T2',0.1e-3,'f',0.1,'dw',0);
 sys = struct('w1',750,'tp',5,'offsets',linspace(-500,500,5000)*w0);
 SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
-figure
+f = figure('Visible','off');
 t = tiledlayout(1,length(SEI_T1));
 t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Lithium DEST: Electrolyte + SEI',...
     ['measure at +-500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
 xlabel(t,'\Delta\omega [ppm]')
 h = zeros(size(SEI_k));
-nexttile
 for j=1:length(SEI_T1)
     SEI.T1 = SEI_T1(j);
+    nexttile
     for i=1:length(SEI_k)
         SEI.k = SEI_k(i);
         title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
         hold on
         ylabel('Z Spectra'); ylim([0 1]); set(gca,'XDir','reverse')
-        h(i) = plot(sys.offsets/w0,CEST_multipool(sys,electrolyte,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
+        [Z,MTR] = CEST_multipool(sys,electrolyte,SEI);
+        h(i) = plot(sys.offsets/w0,Z,'DisplayName',['k=',num2str(SEI.k),' Hz']);
+        plot(sys.offsets/w0,MTR,'--')
     end
     legend(h(1:end),'Location','Southeast');
-    nexttile
 end
+set(f,'Visible','on')
 %% Sodium CEST
 clc;clear;close all;
 % Interaction between Na dendrites (free) and SEI (bound)
@@ -126,16 +131,16 @@ SEI = struct('T1',[10,100],'T2',1/(875e3),'f',0.02,'dw',-1100*w0);
 sys = struct('w1',750,'tp',5,'offsets',linspace(-1500,1500,5000)*w0);
 SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
-figure
+f = figure('Visible','off');
 t = tiledlayout(1,length(SEI_T1));
 t.TileSpacing = 'compact'; t.Padding = 'compact';
 title(t,'Sodium CEST: Dendrites + SEI',...
     ['measure at +-1500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
 xlabel(t,'\Delta\omega [ppm]')
 h = zeros(size(SEI_k));
-nexttile
 for j=1:length(SEI_T1)
     SEI.T1 = SEI_T1(j);
+    nexttile
     for i=1:length(SEI_k)
         SEI.k = SEI_k(i);
         title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
@@ -144,9 +149,8 @@ for j=1:length(SEI_T1)
         h(i) = plot(sys.offsets/w0,CEST_multipool(sys,dendrite,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
     legend(h(1:end),'Location','Southeast');
-    nexttile
 end
-
+set(f,'Visible','on')
 %% Soidum DEST
 % Interaction between electrolyte (Na in organic solvent) and SEI (bound)
 % Experiment done on Na-23 spins at 9.4T
@@ -156,7 +160,7 @@ w0 = gamma*B0;
 
 % System parameters:
 electrolyte = struct('T1',3.8e-3,'T2',3.7e-3);
-SEI = struct('T1',[10,100],'T2',0.1,'f',0.02,'dw',0);
+SEI = struct('T1',[10,100],'T2',0.1e-3,'f',0.02,'dw',0);
 sys = struct('w1',750,'tp',5,'offsets',linspace(-1500,1500,5000)*w0);
 SEI_T1 = [10;100]; SEI_k = [10;50;100;500;1000];
 % Calculate spectra and plot results
@@ -167,9 +171,9 @@ title(t,'Sodium DEST: Electrolyte + SEI',...
     ['measure at +-1500ppm, \omega_1 = ',num2str(sys.w1),' Hz'])
 xlabel(t,'\Delta\omega [ppm]')
 h = zeros(size(SEI_k));
-nexttile
 for j=1:length(SEI_T1)
     SEI.T1 = SEI_T1(j);
+    nexttile
     for i=1:length(SEI_k)
         SEI.k = SEI_k(i);
         title(strcat('T_1 [SEI]=',num2str(SEI.T1), 's'))
@@ -178,7 +182,6 @@ for j=1:length(SEI_T1)
         h(i) = plot(sys.offsets/w0,CEST_multipool(sys,electrolyte,SEI),'DisplayName',['k=',num2str(SEI.k),' Hz']);
     end
     legend(h(1:end),'Location','Southeast');
-    nexttile
 end
 
 
@@ -186,14 +189,14 @@ end
 % Li CEST: What are the limits of the exchanges rates that can be measured
 % Li dendrites/SEI (fraction of 1:0.02)
 
-% Given domains: kb in [0.01 1000] Hz and w1 in [250 2000] Hz.
+% Given domains: SEI_k in [0.01 1000] Hz and sys_w1 in [250 2000] Hz.
 
 % Method: System is called analyzable if direct solving of Bloch-McConnell
 % equations yields observable, significant peaks in asymmetry spectra.
 % Significant is rather subjective. We limit peaks to be at least 0.05 tall
 
 % Create mesh grid of different kb and w1 values. Check analyzability
-% criteria for all combinations in grid and create map of peak height.
+% criterion for all combinations in grid and create map of peak height.
 clc;clear;close all;
 
 % System parameters
@@ -201,48 +204,128 @@ gamma = 16.546; % MHz/T; gyromagnetic ratio
 B0 = 9.4; % T
 w0 = gamma*B0; % MHz
 
-T1a = 10; T2a = 1/(pi*35); % s
-T1b = 150e-3; T2b = 0.5e-3; % s
-M0a = 1; M0b = 0.02; % arb
-dwa = 1000*w0:-w0:-1000*w0; % Hz (Saturation at given freqs)
-db = -260*w0; % offset between wa and wb; dwb = dwa + db
+dendrite = struct('T1',150e-3,'T2',0.5e-3);
+SEI = struct('T1',10,'T2',1/(35e3),'f',0.02,'dw',-260*w0);
+sys = struct('tp',1,'offsets',linspace(-750,750,1000)*w0);
 
 % Create grid: 
-[kb,w1] = meshgrid(linspace(0.01,1000,25),linspace(250,2000,25));
+[SEI_k,sys_w1] = meshgrid(linspace(0.01,1000,25),linspace(250,2000,25));
 
 % Initialize peaks array
-pks = zeros(size(kb));
-
-for jj = 1:length(w1)
-    for ii = 1:length(kb)
+pks = zeros(size(SEI_k));
+f = figure('Visible','off');
+for jj = 1:size(sys_w1,2)
+    for ii = 1:size(SEI_k,1)
         % Calculate spectra
-        [~,A,domain] = CEST(T1a,T2a,T1b,T2b,kb(ii,jj),M0a,M0b,dwa,db,w1(ii,jj),1);
-        % Find peaks in Asymmetry spectrum
+        SEI.k = SEI_k(ii,jj); sys.w1 = sys_w1(ii,jj);
+        [~,MTR] = CEST_multipool(sys,dendrite,SEI);
+        % Find peaks in MTR spectrum
         % Robust method for more than one peak
 %         pks(ii,jj) = ~isempty(findpeaks(A),'MinPeakHeight',0.05));
         % Alternative method, less robust per se
-        pks(ii,jj) = max(A)*(max(A) >= 0.05);
+        pks(ii,jj) = max(MTR)*(max(MTR) >= 0.05);
     end
 end
 
 % Plot results
-lvls = 0:0.01:1;
-contourf(kb,w1,pks,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None')
-xlabel('k_b [Hz]'); ylabel('\omega_1 [Hz]'); title("Li CEST: Peaks' height in Asymmetry spectra"); colorbar
-% lvls = 0:0.01:1;
-% contourf(kb,w1,pks,20,'LabelFormat','%0.3f','LevelList',lvls,'LineStyle','None');
+contourf(SEI_k,sys_w1,pks,'LineStyle','None')
+xlabel('k_{SEI} [Hz]'); ylabel('\omega_1 [Hz]'); title("Li CEST: Peaks height in MTR spectra"); colorbar
+set(f,'Visible','on')
 
-% % Inspect results for single w1,kb
-% w1 = 750; kb = 10;
-% [Z,A,domain] = CEST(T1a,T2a,T1b,T2b,kb,M0a,M0b,dwa,db,w1);
-% t = tiledlayout(2,1);
-% title(t,['T_{1a} = ',num2str(T1a),'s,' ...
-%     ' \omega_1 = ',num2str(w1),'Hz, k_b = ',num2str(kb),'Hz'])
-% ax1 = nexttile;
-% plot(dwa,Z); ax = gca; ax.XDir = 'reverse'; title('Z spectrum')
-% ax2 = nexttile; hold on; linkaxes([ax1,ax2],'x');
-% plot(dwa(1:domain),A); ax = gca; ax.XDir = 'reverse';  title('A spectrum')
-% 
-% % Find peaks in Asymmetry spectrum
-% pks = findpeaks(A,fliplr(dwa(1:domain)),'MinPeakHeight',0.05);
-% plot(dwa(pks == A),pks,'o'); ax = gca; ax.XDir = 'reverse';
+%% Limit Testing: Na CEST
+%  CEST: What are the limits of the exchanges rates that can be measured
+% Na dendrites/SEI (fraction of 1:0.02)
+
+% Given domains: kb in [0.01 1000] Hz and w1 in [250 2000] Hz.
+
+% Create mesh grid of different kb and w1 values. Check analyzability
+% criterion for all combinations in grid and create map of peak height.
+clc;clear;close all;
+
+% System parameters
+gamma = 16.546; % MHz/T; gyromagnetic ratio
+B0 = 9.4; % T
+w0 = gamma*B0; % MHz
+
+dendrite = struct('T1',10e-3,'T2',4e-3);
+SEI = struct('T1',10,'T2',1/(875e3),'f',0.02,'dw',-1100*w0);
+sys = struct('tp',1,'offsets',linspace(-1500,1500,1000)*w0);
+
+% Create grid: 
+[SEI_k,sys_w1] = meshgrid(linspace(0.01,1000,25),linspace(250,2000,25));
+
+% Initialize peaks array
+pks = zeros(size(SEI_k));
+
+for jj = 1:size(sys_w1,2)
+    for ii = 1:size(SEI_k,1)
+        % Calculate spectra
+        SEI.k = SEI_k(ii,jj); sys.w1 = sys_w1(ii,jj);
+        [~,MTR] = CEST_multipool(sys,dendrite,SEI);
+        % Find peaks in MTR spectrum
+        % Robust method for more than one peak
+%         pks(ii,jj) = ~isempty(findpeaks(A),'MinPeakHeight',0.05));
+        % Alternative method, less robust per se
+        pks(ii,jj) = max(MTR)*(max(MTR) >= 0.05);
+    end
+end
+
+% Plot results
+contourf(SEI_k,sys_w1,pks,'LineStyle','None')
+xlabel('k_{SEI} [Hz]'); ylabel('\omega_1 [Hz]'); title("Na CEST: Peaks height in MTR spectra"); colorbar
+
+%% Limit Testing: Li DEST
+% Li DEST: What are the limits of the exchanges rates that can be measured
+% Li electrolyte/SEI.
+
+% Given domains: SEI_k in [0.01 1000] Hz and SEI_f in [0.01 0.1].
+% Calculate for sys_w1 = [250, 500, 2000] Hz.
+
+% Method: System is called analyzable if direct solving of Bloch-McConnell
+% equations yields observable, significant peaks in asymmetry spectra.
+% Significant is rather subjective. We limit peaks to be at least 0.05 tall
+
+% Create mesh grid of different kb and w1 values. Check analyzability
+% criterion for all combinations in grid and create map of peak height.
+clc;clear;close all;
+
+% System parameters
+gamma = 16.546; % MHz/T; gyromagnetic ratio
+B0 = 9.4; % T
+w0 = gamma*B0; % MHz
+
+electrolyte = struct('T1',2.2,'T2',0.4);
+SEI = struct('T1',10,'T2',0.1e-3,'dw',0);
+sys = struct('tp',10,'offsets',linspace(-750,750,1000)*w0);
+
+% Create grid: 
+[SEI_k,SEI_f] = meshgrid(linspace(0.01,1000,10),linspace(0.01,0.1,10));
+% Create sys_w1 array
+sys_w1 = [250;500;2000];
+
+% Initialize peaks array
+pks = zeros(size(SEI_k));
+f = figure('Visible','off');
+
+t = tiledlayout(1,length(sys_w1));
+t.TileSpacing = 'compact'; t.Padding = 'compact';
+title(t,'Lithium DEST: Electrolyte + SEI',...
+    'measure at +-750ppm, Varying \omega_1')
+xlabel(t,'\Delta\omega [ppm]')
+for kk = 1:length(sys_w1)
+    sys.w1 = sys_w1(kk);
+    for jj = 1:size(SEI_f,2)
+        for ii = 1:size(SEI_k,1)
+            % Calculate spectra
+            SEI.k = SEI_k(ii,jj); SEI.f = SEI_f(ii,jj);
+            [~,MTR] = CEST_multipool(sys,electrolyte,SEI);
+            % Find peaks in MTR spectrum
+            pks(ii,jj) = max(MTR)*(max(MTR) >= 0.05);
+        end
+    end
+    nexttile
+    % Plot results
+    contourf(SEI_k,SEI_f,pks,'LineStyle','None')
+    xlabel('k_{SEI} [Hz]'); ylabel('f_{SEI}'); title(['\omega_1 = ',num2str(sys.w1),' Hz']); colorbar
+end
+set(f,'Visible','on')

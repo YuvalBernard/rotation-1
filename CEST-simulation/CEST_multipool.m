@@ -1,4 +1,4 @@
-function [Z,MTR] = CEST_multipool(System,varargin)
+function [Z,MTR_asym,MTR_pcm] = CEST_multipool(System,varargin)
 % Attempt at solving multi-pool CEST of given dimensionality.
 % Calculate Z spectrum and corresponding MTR Asymmetry spectrum
 % Note: Equilibrium magnetization of large pool normalized to 1.
@@ -66,48 +66,91 @@ K = S + kron(Ex,eye(3)); % Coefficient matrix of Bloch-McConnell equations of al
 % Now that the system parameters are almost fully initialized, calculate Z
 % spectum.
 Z = zeros(N,1);
+% If System.tp is not given, no need to save M_ss locally.
+if ~isfield(System,'tp') % Full saturation assumed
+    for j = 1:N
+        % Finish initialization of full coefficient matrix.
+        A = K + kron(eye(n),[0 -offsets(j) 0;
+            offsets(j) 0 0;
+            0 0 0]);
+        % Calculate steady-state magnetization according to Bloch McConnell
+        % equations
+        Z(j) = parenth(-A\b,3);
+    end
+end
 for j = 1:N
     % Finish initialization of full coefficient matrix.
     A = K + kron(eye(n),[0 -offsets(j) 0;
-                        offsets(j) 0 0;
-                        0 0 0]);
-%     
+        offsets(j) 0 0;
+        0 0 0]);
     % Calculate steady-state magnetization according to Bloch McConnell
     % equations
-    % If System.tp is not given, no need to save M_ss locally.
+    M_ss = -A\b;
+    Z(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3);
+
+end
+
+if nargout >= 2
+    %%%%%%%%%%%%% Calculate MTR_asym spectrum
+    % MTR_asym spectrum is calculated by taking Z_ref - Z,
+    % where Z_ref is the associated Z spectrum without exchange.
+    % Just solve BM equations again but with P_i.f and Pi_k set to zero.
+    % Reconstruct core matrices:
+    b(6:end) = 0; M0(6:end) = 0;
+    K = S;
+    % Initizlize MTR spectrum array
+    MTR_asym = zeros(N,1);
     if ~isfield(System,'tp') % Full saturation assumed
-        Z(j) = parenth(-A\b,3);
-    else % Calculate Z for given tp
+        for j = 1:N
+            % Finish initialization of full coefficient matrix.
+            A = K + kron(eye(n),[0 -offsets(j) 0;
+                offsets(j) 0 0;
+                0 0 0]);
+            MTR_asym(j) = parenth(-A\b,3) - Z(j);
+        end
+    end
+    for j = 1:N
+        % Finish initialization of full coefficient matrix.
+        A = K + kron(eye(n),[0 -offsets(j) 0;
+            offsets(j) 0 0;
+            0 0 0]);
         M_ss = -A\b;
-        Z(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3);
+        MTR_asym(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3) - Z(j);
+
     end
 end
 
-%%%%%%%%%%%%% Calculate MTR spectrum
-% MTR spectrum is calculated by taking Z_ref - Z,
+if nargout == 3
+%%%%%%%%%%%%% Calculate MTR_pcm spectrum
+% MTR_pcm spectrum is calculated by taking (Z_ref-Z)/(Z_ref-Z +Z_ref*Z)
 % where Z_ref is the associated Z spectrum without exchange.
 % Just solve BM equations again but with P_i.f and Pi_k set to zero.
-% Reconstruct core matrices:
-b(6:end) = 0; M0(6:end) = 0;
-K = S;
-% Initizlize MTR spectrum array
-MTR = zeros(N,1);
-for j = 1:N
-    % Finish initialization of full coefficient matrix.
-    A = K + kron(eye(n),[0 -offsets(j) 0;
-                        offsets(j) 0 0;
-                        0 0 0]);
-    
-    % Calculate steady-state magnetization according to Bloch McConnell
-    % equations
-    
+    % Reconstruct core matrices:
+    b(6:end) = 0; M0(6:end) = 0;
+    K = S;
+    % Initizlize MTR spectrum array
+    MTR_pcm = zeros(N,1);
     if ~isfield(System,'tp') % Full saturation assumed
-        MTR(j) = parenth(-A\b,3) - Z(j);
-    else % Calculate Z for given tp
+        for j = 1:N
+            % Finish initialization of full coefficient matrix.
+            A = K + kron(eye(n),[0 -offsets(j) 0;
+                offsets(j) 0 0;
+                0 0 0]);
+            Z_ref = parenth(-A\b,3);
+            MTR_pcm(j) = (Z_ref - Z(j))/(Z_ref - Z(j) + Z_ref*Z(j));
+        end
+    end
+    for j = 1:N
+        % Finish initialization of full coefficient matrix.
+        A = K + kron(eye(n),[0 -offsets(j) 0;
+            offsets(j) 0 0;
+            0 0 0]);
         M_ss = -A\b;
-        MTR(j) = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3) - Z(j);
+        Z_ref = parenth(fastExpm(A * System.tp)*(M0 - M_ss) + M_ss,3);
+        MTR_pcm(j) = (Z_ref - Z(j))/(Z_ref - Z(j) + Z_ref*Z(j));
     end
 end
+
 end
 function out = parenth(x, varargin)
     out = x(varargin{:});
