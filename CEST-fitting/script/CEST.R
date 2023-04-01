@@ -134,4 +134,4 @@ p1 <- p1 + geom_point() +
 p1 + geom_line(aes(x = xZ, y = median)) +
   geom_ribbon(aes(ymin = lb, ymax = ub), alpha = 0.25)
 
-dev.off()
+# dev.off()
