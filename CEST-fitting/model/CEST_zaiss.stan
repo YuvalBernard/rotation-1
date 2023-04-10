@@ -33,6 +33,6 @@ model {
   Z ~ normal(Z_hat,sigma);
 }
 generated quantities {
-  real Z_pred[N];
-  Z_pred = normal_rng(Z_hat, sigma);
+  array[N] real Z_rep;
+  Z_rep = normal_rng(Z_hat, sigma);
 }

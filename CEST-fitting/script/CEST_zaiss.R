@@ -89,9 +89,9 @@ save(fit, file = file.path(outDir, paste(modelName, "Fit.Rsave", sep = "")))
 dir.create(figDir)
 dir.create(tabDir)
 
-## open graphics device
-# pdf(file = file.path(figDir, paste(modelName,"Plots%03d.pdf", sep = "")),
-# width = 6, height = 6, onefile = F)
+# open graphics device
+pdf(file = file.path(figDir, paste(modelName,"Plots%03d.pdf", sep = "")),
+width = 6, height = 6, onefile = F)
 
 options(bayesplot.base_size = 12,
         bayesplot.base_family = "sans")
