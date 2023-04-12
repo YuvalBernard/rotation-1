@@ -80,18 +80,13 @@ transformed parameters {
 }
 
 model {
-  profile("priors"){
-    R2b_std ~ std_normal(); 
-  }
-  profile("likelihood"){
-    Z ~ normal(Z_tilde, sigma) T[0, 1];
-  }
+  R2b_std ~ std_normal(); 
+  
+  Z ~ normal(Z_tilde, sigma) T[0, 1];
 }
 
 generated quantities {
   vector<lower=0, upper=1>[N] Z_rep;
-  profile("gq"){
-    Z_rep = normal_lub_rng(Z_tilde, sigma,
-                           rep_vector(0,N), rep_vector(1,N));
-  }
+  Z_rep = normal_lub_rng(Z_tilde, sigma,
+                         rep_vector(0,N), rep_vector(1,N));
 }

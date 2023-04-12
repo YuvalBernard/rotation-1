@@ -104,13 +104,17 @@ dataStruct = struct('N',N,'xZ',sys.offsets,'Z',Z,'w1',sys.w1,'tp',sys.tp,'sigma'
 
 disp('done!')
 %% Read actual data from table
+gamma = 16.546; % MHz/T; gyromagnetic ratio of Li
+B0 = 9.4; % T
+w0 = gamma*B0; % in MHz
+
 cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived';
 
 T = readtable('LP30_dendrotes_CEST_exp_fit.xlsx',...
     'Range','A4:AA55');
 
 % Make sure that data is in [0,1]. Not sure why that is in the first place.
-xZ = T.Var1; Z = T.Var20;
+xZ = T.Var1 * w0; Z = T.Var20;
 Z(Z >= 1) = 0.9995;
 
 % Save current experiment as csv, with name

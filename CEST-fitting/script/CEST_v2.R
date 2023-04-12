@@ -17,8 +17,9 @@ library(cmdstanr)
 library(posterior)
 library(bayesplot)
 library(ggplot2)
-color_scheme_set("darkgray")
-bayesplot_theme_set(new = theme_gray())
+color_scheme_set("red")
+bayesplot_theme_set(new = theme_default())
+
 modelName <- "CEST"
 
 setwd("~/Weizmann/rotation-1/CEST-fitting/script")
@@ -46,9 +47,13 @@ mod$compile(stanc_options = list("O1"))
 # Data Configuration ------------------------------------------------------
 
 # Read data
-Xdata <- read.csv(file.path(dataDir, "LP30_323.csv"),header = FALSE)
+Xdata <- read.csv(file.path(dataDir, "LP30_323_500.csv"),header = FALSE)
 xZ = with(Xdata,V1)
 Z = with(Xdata,V2)
+
+# Specify current experiment name. e.g. 'LP30_323_500_{sim/exp}'
+# for Material: LP30, temperature: 323K, w1: 500Hz
+expName <- "LP30_323_500_exp"
 
 # Create data set
 data_list <- list(
@@ -86,6 +91,7 @@ rds_file <- file.path(outDir, paste(modelName, "_fit.RDS", sep = ""))
 fit$save_object(file = rds_file)
 
 # Load fit object
+rds_file <- file.path(outDir, paste(modelName, "_fit.RDS", sep = ""))
 fit <- readRDS(rds_file)
 
 # Posterior Summary Statistics --------------------------------------------
@@ -99,14 +105,18 @@ posterior <- as.array(fit$draws())
 fit$summary(pars_to_fit)
 
 # Plot MCMC diagnostics 
-mcmc_combo(
+p <- mcmc_combo(
   posterior,
   combo = c("dens_overlay", "trace"),
-  pars = pars_to_fit
-)
+  pars = pars_to_fit)
+print(p)
+ggsave(file.path(figDir, paste(expName,"_mcmc_combo.pdf", sep = "")), plot = p, dpi = 300)
 mcmc_rhat(rhat(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
+ggsave(file.path(figDir, paste(expName,"_mcmc_rhat.pdf", sep = "")),dpi = 300)
 mcmc_neff(neff_ratio(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
+ggsave(file.path(figDir, paste(expName,"_mcmc_neff.pdf", sep = "")),dpi = 300)
 mcmc_pairs(posterior, pars = pars_to_fit)
+ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")),dpi = 300)
 
 
 # Penalized Maximum Likelihood -------------------------------------------
@@ -143,6 +153,7 @@ Z_rep <- as_draws_matrix(fit$draws("Z_rep"), .nchains = 1)
 Z_rep_mean = colMeans(Z_rep)
 
 ppc_dens_overlay(Z,Z_rep[1:25, ])
+ggsave(file.path(figDir, paste(expName,"_ppc_dens_overlay.pdf", sep = "")),dpi = 300)
 
 plot(xZ,Z)
 lines(xZ,Z_rep_mean,col = "blue")
