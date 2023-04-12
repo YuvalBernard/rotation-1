@@ -1,7 +1,18 @@
 functions {
-  vector normal_lub_rng(vector mu, real sigma, vector lb, vector ub) {
-    return mu + sigma * inv_Phi(uniform_rng(normal_cdf(lb | mu, sigma),
-                                            normal_cdf(ub | mu, sigma)));
+// generate random numbers from normal(mu, sigma) truncated between lb and ub
+  real normal_lub_rng(real mu, real sigma, real lb, real ub) {
+    if (is_nan(mu) || is_inf(mu)) {
+      reject("normal_lub_rng: mu must be finite; ",
+             "found mu = ", mu);
+    }
+    if (sigma < 0 || sigma > 1) {
+      reject("normal_lub_rng: sigma must be between 0 and 1; ",
+             "found sigma = ", sigma);
+    }
+    real p_lb = normal_cdf(lb | mu, sigma);
+    real p_ub = normal_cdf(ub | mu, sigma);
+    real u = uniform_rng(p_lb, p_ub);
+    return mu + sigma * std_normal_qf(u);
   }
 }
 
@@ -37,7 +48,7 @@ transformed parameters {
   real f = 0.02 + 0.005 * tan(f_unif); // f ~ cauchy(0.02,0.005) 
   real sigma = 0.05 * tan(sigma_unif); // sigma ~ cauchy(0,0.05)
   
-  vector<lower=0, upper=1>[N] Z_tilde;
+  vector<lower=0, upper=1.05>[N] Z_tilde;
   
   // Calculation process of Z_tilde need not be exposed to other blocks
   {
@@ -86,7 +97,13 @@ model {
 }
 
 generated quantities {
-  vector<lower=0, upper=1>[N] Z_rep;
-  Z_rep = normal_lub_rng(Z_tilde, sigma,
-                         rep_vector(0,N), rep_vector(1,N));
+  vector[N] Z_rep;
+  
+  for(i in 1:N){
+    Z_rep[i] = normal_lub_rng(Z_tilde[i], sigma, 0, 1);
+    if (Z_rep[i] < 0 || Z_rep[i] > 1) {
+      reject("Z_rep must be between 0 and 1; ",
+             "found Z_rep[i] = ", Z_rep[i]);
+    }
+  }
 }

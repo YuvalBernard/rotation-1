@@ -87,11 +87,11 @@ fit <- mod$sample(
 )
 
 # Save fit object
-rds_file <- file.path(outDir, paste(modelName, "_fit.RDS", sep = ""))
+rds_file <- file.path(outDir, paste(expName, "_fit.RDS", sep = ""))
 fit$save_object(file = rds_file)
 
 # Load fit object
-rds_file <- file.path(outDir, paste(modelName, "_fit.RDS", sep = ""))
+rds_file <- file.path(outDir, paste(expName, "_fit.RDS", sep = ""))
 fit <- readRDS(rds_file)
 
 # Posterior Summary Statistics --------------------------------------------
@@ -105,18 +105,19 @@ posterior <- as.array(fit$draws())
 fit$summary(pars_to_fit)
 
 # Plot MCMC diagnostics 
-p <- mcmc_combo(
+p_mcmc_combo <- mcmc_combo(
   posterior,
   combo = c("dens_overlay", "trace"),
   pars = pars_to_fit)
-print(p)
-ggsave(file.path(figDir, paste(expName,"_mcmc_combo.pdf", sep = "")), plot = p, dpi = 300)
+print(p_mcmc_combo)
+ggsave(file.path(figDir, paste(expName,"_mcmc_combo.pdf", sep = "")), plot = p_mcmc_combo, dpi = 300)
 mcmc_rhat(rhat(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
 ggsave(file.path(figDir, paste(expName,"_mcmc_rhat.pdf", sep = "")),dpi = 300)
 mcmc_neff(neff_ratio(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
 ggsave(file.path(figDir, paste(expName,"_mcmc_neff.pdf", sep = "")),dpi = 300)
-mcmc_pairs(posterior, pars = pars_to_fit)
-ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")),dpi = 300)
+p_mcmc_pairs <- mcmc_pairs(posterior, pars = pars_to_fit)
+print(p_mcmc_pairs)
+ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")), plot = p_mcmc_pairs, dpi = 300)
 
 
 # Penalized Maximum Likelihood -------------------------------------------
@@ -163,10 +164,7 @@ Z_pred <- as_draws_matrix(fit$draws("Z_tilde"), .nchains = 1)
 Z_pred_mean = colMeans(Z_pred)
 
 ppc_dens_overlay(Z,Z_pred[1:25, ])
+ggsave(file.path(figDir, paste(expName,"_ppc_dens_overlay_tilde.pdf", sep = "")),dpi = 300)
 
 plot(xZ,Z)
 lines(xZ,Z_pred_mean, col = "red")
-
-# Profiling ---------------------------------------------------------------
-
-fit$profiles()
