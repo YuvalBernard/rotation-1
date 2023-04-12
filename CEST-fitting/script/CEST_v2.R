@@ -1,11 +1,19 @@
 
 # Preliminaries -----------------------------------------------------------
 
+# load cmdstanr and build cmdstan with optimizations
+# install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+# library(cmdstanr)
+# check_cmdstan_toolchain(fix = TRUE, quiet = TRUE)
+# cpp_options = list(STAN_CPP_OPTIMS = TRUE, "CXXFLAGS += -O3 -march=native -mtune=native")
+# cmdstan_make_local(cpp_options = cpp_options, append = TRUE)
+# install_cmdstan(cores = 4) or rebuild_cmdstan(cores = 4) if already installed without optimizations
+
+
 rm(list = ls())
 gc()
 # Load libraries
 library(cmdstanr)
-check_cmdstan_toolchain(fix = TRUE, quiet = TRUE)
 library(posterior)
 library(bayesplot)
 library(ggplot2)
@@ -56,11 +64,11 @@ data_list <- list(
 
 # Specify initial estimates
 init_estimates = function() list(
-  R1b = runif(n=1, min=1, max=150),
-  R2b = runif(n=1, min=15000, max=35000),
-  f = runif(n=1, min=0.0001, max=0.1),
-  k = runif(n=1, min=200, max=400),
-  sigma = runif(n=1, min=0, max=0.1)
+  R1b_unif = runif(n=1, min=0, max=1),
+  R2b_std = runif(n=1, min=0, max=1),
+  f_unif = runif(n=1, min=0, max=1),
+  k_unif = runif(n=1, min=0, max=1),
+  sigma_unif = runif(n=1, min=0, max=1)
 )
 
 
@@ -74,11 +82,11 @@ fit <- mod$sample(
 )
 
 # Save fit object
-temp_rds_file <- tempfile(fileext = ".RDS")
-fit$save_object(file = temp_rds_file)
+rds_file <- file.path(outDir, paste(modelName, "_fit.RDS", sep = ""))
+fit$save_object(file = rds_file)
 
 # Load fit object
-fit <- readRDS(temp_rds_file)
+fit <- readRDS(rds_file)
 
 # Posterior Summary Statistics --------------------------------------------
 
@@ -111,6 +119,7 @@ fit_pml <- mod$optimize(
 
 # Summarize results
 optimized_pars <- fit_pml$summary(pars_to_fit)
+optimized_pars
 
 p1 <- mcmc_hist(fit$draws("f")) + 
   vline_at(fit_pml$mle("f"), size = 1.5)
@@ -133,5 +142,20 @@ cowplot::plot_grid(p1,p2,p3,p4, nrow = 2, ncol = 2)
 Z_rep <- as_draws_matrix(fit$draws("Z_rep"), .nchains = 1)
 Z_rep_mean = colMeans(Z_rep)
 
+ppc_dens_overlay(Z,Z_rep[1:25, ])
+
 plot(xZ,Z)
 lines(xZ,Z_rep_mean,col = "blue")
+
+# Check if Z_tilde (generated from model) fits the data
+Z_pred <- as_draws_matrix(fit$draws("Z_tilde"), .nchains = 1)
+Z_pred_mean = colMeans(Z_pred)
+
+ppc_dens_overlay(Z,Z_pred[1:25, ])
+
+plot(xZ,Z)
+lines(xZ,Z_pred_mean, col = "red")
+
+# Profiling ---------------------------------------------------------------
+
+fit$profiles()

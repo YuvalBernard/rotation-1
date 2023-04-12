@@ -85,19 +85,37 @@ clearvars gamma B0 w0 dendrite SEI electrolyte sys N
 gamma = 16.546; % MHz/T; gyromagnetic ratio
 B0 = 9.4; % T
 w0 = gamma*B0; % in MHz
-N = 100; % Number of measurements.
+N = 200; % Number of measurements.
 
 dendrite = struct('T1',1/8,'T2',1/393);
 SEI = struct('T1',100,'T2',1/(28e3),'k',285,'f',0.02,'dw',-260*w0);
 sys = struct('offsets',linspace(-500,500,N)*w0,'tp',0.2,'w1',500);
 
-Z = CEST_multipool(sys,dendrite,SEI);
-% plot(Z)
+Z = CEST_multipool(sys,dendrite,SEI) + 0.01*randn(length(sys.offsets),1);
+plot(Z,'.')
+
+% Make sure that data is in [0,1]. Not sure why that is in the first place.
+xZ = sys.offsets'; Z(Z >= 1) = 0.9995; Z(Z <= 0) = 1e-4;
+% Save simulation data to csv format
+writematrix([xZ,Z],'LP30_323.csv')
 
 % collect data for Stan
 dataStruct = struct('N',N,'xZ',sys.offsets,'Z',Z,'w1',sys.w1,'tp',sys.tp,'sigma',std(Z));
 
 disp('done!')
+%% Read actual data from table
+cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived';
+
+T = readtable('LP30_dendrotes_CEST_exp_fit.xlsx',...
+    'Range','A4:AA55');
+
+% Make sure that data is in [0,1]. Not sure why that is in the first place.
+xZ = T.Var1; Z = T.Var20;
+Z(Z >= 1) = 0.9995;
+
+% Save current experiment as csv, with name
+% '@Material_@temperature_@RF_amplitude.csv'
+writematrix([xZ,Z],'LP30_323_500.csv')
 
 %% model specification
 

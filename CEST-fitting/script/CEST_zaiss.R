@@ -81,7 +81,12 @@ fit <- stan(file = file.path(modelDir, paste(modelName, ".stan", sep = "")),
             #control = list(adapt_delta = 0.9),
             chains = nChains)
 
-save(fit, file = file.path(outDir, paste(modelName, "Fit.Rsave", sep = "")))
+# Save fit object
+rds_file <- file.path(outDir, paste(modelName, "Fit.RDS", sep = ""))
+fit$save_object(file = rds_file)
+
+# Load fit object
+fit <- readRDS(rds_file)
 
 ##################################################################
 ## posterior distributions of parameters
