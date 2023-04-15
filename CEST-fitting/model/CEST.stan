@@ -1,21 +1,3 @@
-functions {
-// generate random numbers from normal(mu, sigma) truncated between lb and ub
-  real normal_lub_rng(real mu, real sigma, real lb, real ub) {
-    if (is_nan(mu) || is_inf(mu)) {
-      reject("normal_lub_rng: mu must be finite; ",
-             "found mu = ", mu);
-    }
-    if (sigma < 0 || sigma > 1) {
-      reject("normal_lub_rng: sigma must be between 0 and 1; ",
-             "found sigma = ", sigma);
-    }
-    real p_lb = normal_cdf(lb | mu, sigma);
-    real p_ub = normal_cdf(ub | mu, sigma);
-    real u = uniform_rng(p_lb, p_ub);
-    return mu + sigma * std_normal_qf(u);
-  }
-}
-
 data {
   int N; // num. of measurements
   real<lower=0> R1a;
@@ -98,12 +80,16 @@ model {
 
 generated quantities {
   vector[N] Z_rep;
+  // generate random numbers from normal(Z_tilde, sigma) truncated between 0 and 1
+  {
+    vector[N] p_lb;
+    vector[N] p_ub;
   
-  for(i in 1:N){
-    Z_rep[i] = normal_lub_rng(Z_tilde[i], sigma, 0, 1);
-    if (Z_rep[i] < 0 || Z_rep[i] > 1) {
-      reject("Z_rep must be between 0 and 1; ",
-             "found Z_rep[i] = ", Z_rep[i]);
+    for(i in 1:N){
+      p_lb[i] = normal_cdf(0 | Z_tilde[i], sigma);
+      p_ub[i] = normal_cdf(1 | Z_tilde[i], sigma);
     }
+    vector[N] u = to_vector(uniform_rng(p_lb, p_ub));
+    Z_rep = Z_tilde + sigma * std_normal_qf(u);
   }
 }
