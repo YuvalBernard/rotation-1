@@ -16,19 +16,27 @@ transformed data {
 }
 
 parameters {
-  real<lower=0, upper = pi() / 2> R1b_unif;
   real<lower=0> R2b_std;
-  real<lower=0, upper = pi() / 2> k_unif;
-  real<lower=0, upper = pi() / 2> f_unif;
-  real<lower=0, upper = pi() / 2> sigma_unif;
+  real<lower=0> R1b_std;
+  real<lower=0> k_std;
+  real<lower=0> f_std;
+  real<lower=0> sigma_std;
+  // real<lower=0, upper = pi() / 2> R1b_unif;
+  // real<lower=0, upper = pi() / 2> k_unif;
+  // real<lower=0, upper = pi() / 2> f_unif;
+  // real<lower=0, upper = pi() / 2> sigma_unif;
 }
 
 transformed parameters {
-  real R1b = 50 * tan(R1b_unif); // R1b ~ cauchy(0,50)
-  real R2b = 27000 + 3000 * R2b_std; // R2b ~ normal(27000,3000)
-  real k = 285 + 10 * tan(k_unif); // k ~ cauchy(285,10)
-  real f = 0.02 + 0.005 * tan(f_unif); // f ~ cauchy(0.02,0.005) 
-  real sigma = 0.05 * tan(sigma_unif); // sigma ~ cauchy(0,0.05)
+  real R2b = 27000 + 5000 * R2b_std; // R2b ~ normal(27000,3000)
+  real R1b = 5 * R1b_std;
+  real k = 150 + 100 * k_std;
+  real f = 0.015 + 0.005 * f_std;
+  real sigma = 0.05 * sigma_std;
+  // real k = 285 + 10 * tan(k_unif); // k ~ cauchy(285,10)
+  // real f = 0.02 + 0.005 * tan(f_unif); // f ~ cauchy(0.02,0.005) 
+  // real sigma = 0.05 * tan(sigma_unif); // sigma ~ cauchy(0,0.05)
+  // real R1b = 50 * tan(R1b_unif); // R1b ~ cauchy(0,50)
   
   vector<lower=0, upper=1.05>[N] Z_tilde;
   
@@ -74,7 +82,10 @@ transformed parameters {
 
 model {
   R2b_std ~ std_normal(); 
-  
+  R1b_std ~ std_normal();
+  f_std ~ std_normal();
+  k_std ~ std_normal();
+  sigma_std ~ std_normal();
   Z ~ normal(Z_tilde, sigma) T[0, 1];
 }
 

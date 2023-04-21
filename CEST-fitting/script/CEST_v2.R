@@ -61,7 +61,7 @@ data_list <- list(
   R1a = 8,
   R2a = 393,
   w1 = 500,
-  dw = -260,
+  dw = -260*9.4*16.546,
   tp = 0.2,
   xZ = xZ,
   Z = Z
@@ -69,13 +69,12 @@ data_list <- list(
 
 # Specify initial estimates
 init_estimates = function() list(
-  R1b_unif = runif(n=1, min=0, max=1),
-  R2b_std = runif(n=1, min=0, max=1),
-  f_unif = runif(n=1, min=0, max=1),
-  k_unif = runif(n=1, min=0, max=1),
-  sigma_unif = runif(n=1, min=0, max=1)
+  R1b_std = runif(n=1, min=0.01, max=1),
+  R2b_std = runif(n=1, min=0.01, max=1),
+  f_std = runif(n=1, min=0.01, max=1),
+  k_std = runif(n=1, min=0.01, max=1),
+  sigma_std = runif(n=1, min=0.01, max=1)
 )
-
 
 # Run MCMC ----------------------------------------------------------------
 
@@ -84,6 +83,7 @@ fit <- mod$sample(
   chains = 4,
   parallel_chains = 4,
   init = init_estimates,
+  iter_sampling = 2000
 )
 
 # Save fit object
@@ -97,12 +97,13 @@ fit <- readRDS(rds_file)
 # Posterior Summary Statistics --------------------------------------------
 
 # Specify parameters for posterior diagnostics
-pars_to_fit <- c("R1b", "R2b", "f", "k")
+pars_to_fit <- c("R1b", "R2b", "f", "k", "sigma")
 
 posterior <- as.array(fit$draws())
 
 # Print summary statistics
-fit$summary(pars_to_fit)
+fit_summary <- fit$summary(pars_to_fit)
+print(fit_summary)
 
 # Plot MCMC diagnostics 
 p_mcmc_combo <- mcmc_combo(
@@ -122,15 +123,27 @@ ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")), plot = p_m
 
 # Penalized Maximum Likelihood -------------------------------------------
 
+# Calculate transformed initial estimates.
+# Change transformation according to model!
+transformed_init = function(fit_summary) list(
+  list(
+    R1b_std = fit_summary$mean[1] / 5,
+    R2b_std = (fit_summary$mean[2] - 27000) / 5000,
+    f_std = (fit_summary$mean[3] - 0.015) / 0.005,
+    k_std = (fit_summary$mean[4] - 150) / 100,
+    sigma_std = fit_summary$mean[5] / 0.05 
+  )
+)
+
 # Find the mode (per parameter) of the joint posterior distribution 
 fit_pml <- mod$optimize(
   data = data_list,
-  init = init_estimates
+  init = transformed_init(fit_summary)
 )
 
 # Summarize results
 optimized_pars <- fit_pml$summary(pars_to_fit)
-optimized_pars
+print(optimized_pars)
 
 p1 <- mcmc_hist(fit$draws("f")) + 
   vline_at(fit_pml$mle("f"), size = 1.5)

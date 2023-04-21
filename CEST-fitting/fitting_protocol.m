@@ -91,8 +91,8 @@ dendrite = struct('T1',1/8,'T2',1/393);
 SEI = struct('T1',100,'T2',1/(28e3),'k',285,'f',0.02,'dw',-260*w0);
 sys = struct('offsets',linspace(-500,500,N)*w0,'tp',0.2,'w1',500);
 
-Z = CEST_multipool(sys,dendrite,SEI) + 0.01*randn(length(sys.offsets),1);
-plot(Z,'.')
+Z_sim = CEST_multipool(sys,dendrite,SEI);
+plot(Z_sim,'.')
 
 % Make sure that data is in [0,1]. Not sure why that is in the first place.
 xZ = sys.offsets'; Z(Z >= 1) = 0.9995; Z(Z <= 0) = 1e-4;
@@ -107,8 +107,8 @@ disp('done!')
 gamma = 16.546; % MHz/T; gyromagnetic ratio of Li
 B0 = 9.4; % T
 w0 = gamma*B0; % in MHz
-
-cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived';
+cd 'C:\Users\Yuval Bernard\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
+% cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived';
 
 T = readtable('LP30_dendrotes_CEST_exp_fit.xlsx',...
     'Range','A4:AA55');
