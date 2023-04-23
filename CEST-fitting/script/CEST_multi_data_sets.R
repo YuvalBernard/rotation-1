@@ -55,6 +55,8 @@ Z2 = with(Xdata,V22)
 Z3 = with(Xdata,V24)
 Z4 = with(Xdata,V26)
 
+Z = c(Z1,Z2,Z3,Z4)
+
 # Specify current experiment name. e.g. 'LP30_323_500_{sim/exp}'
 # for Material: LP30, temperature: 323K, w1: 500Hz
 expName <- "LP30_323_500_1000_1500_2000_exp"

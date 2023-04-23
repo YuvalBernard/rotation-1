@@ -31,7 +31,7 @@ parameters {
 }
 
 transformed parameters {
-  real R2b = 27000 + 5000 * R2b_std; // R2b ~ normal(27000,3000)
+  real R2b = 27000 + 5000 * R2b_std;
   real R1b = 5 * R1b_std;
   real k = 150 + 100 * k_std;
   real f = 0.015 + 0.005 * f_std;
