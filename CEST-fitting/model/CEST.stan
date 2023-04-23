@@ -65,12 +65,13 @@ transformed parameters {
       vector[6] b = to_vector([0,0,R1a,0,0,f*R1b]);
       vector[6] M0 = to_vector([0,0,1,0,0,f]);
       vector[6] M; // auxiliary vector
-      vector[6] A_inv_b = A\b;
     
       A[1,2] = -xZ_rad[i];
       A[2,1] = xZ_rad[i];
       A[4,5] = (-xZ_rad[i] + dw_rad);
       A[5,4] = (xZ_rad[i] - dw_rad);
+      
+      vector[6] A_inv_b = A\b;
     
       M = matrix_exp(A * tp) * (M0 + A_inv_b) - A_inv_b;
     

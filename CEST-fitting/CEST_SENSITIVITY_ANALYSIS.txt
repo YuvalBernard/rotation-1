@@ -1,0 +1,19 @@
+## Sensitivity Analysis
+
+Normal priors:
+  real R2b = 27000 + 5000 * R2b_std; // R2b ~ normal(27000,3000)
+  real R1b = 5 * R1b_std;
+  real k = 150 + 100 * k_std;
+  real f = 0.015 + 0.005 * f_std;
+  real sigma = 0.05 * sigma_std;
+Results:
+  R2b = 30631 +- 2980
+  R1b = 4.00 +- 2.98
+  f = 0.0167 +- 0.001
+  k = 194 +- 40.4
+  sigma = 0.136 +- 0.013
+
+Uniform priors:
+  well, all variables are given a uniform prior... Nothing to specify.
+Results:
+  

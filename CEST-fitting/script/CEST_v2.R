@@ -69,11 +69,16 @@ data_list <- list(
 
 # Specify initial estimates
 init_estimates = function() list(
-  R1b_std = runif(n=1, min=0.01, max=1),
-  R2b_std = runif(n=1, min=0.01, max=1),
-  f_std = runif(n=1, min=0.01, max=1),
-  k_std = runif(n=1, min=0.01, max=1),
-  sigma_std = runif(n=1, min=0.01, max=1)
+  # R1b_std = runif(n=1, min=0.01, max=1),
+  # R2b_std = runif(n=1, min=0.01, max=1),
+  # f_std = runif(n=1, min=0.01, max=1),
+  # k_std = runif(n=1, min=0.01, max=1),
+  # sigma_std = runif(n=1, min=0.01, max=1)
+  R1b = 1,
+  R2b = 25000,
+  f = 0.02,
+  k = 200,
+  sigma = 0.01
 )
 
 # Run MCMC ----------------------------------------------------------------
