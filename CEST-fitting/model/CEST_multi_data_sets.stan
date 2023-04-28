@@ -26,16 +26,18 @@ parameters {
   real<lower=0> R2b_std;
   real<lower=0> R1b_std;
   real<lower=0> k_std;
-  real<lower=0> f_std;
-  real<lower=0> sigma_std;
+  // real<lower=0> f_std;
+  // real<lower=0> sigma_std;
+  real<lower=0> sigma;
+  real<lower=0> f;
 }
 
 transformed parameters {
   real R2b = 27000 + 5000 * R2b_std;
   real R1b = 5 * R1b_std;
   real k = 150 + 100 * k_std;
-  real f = 0.015 + 0.005 * f_std;
-  real sigma = 0.05 * sigma_std;
+  // real f = 0.015 + 0.005 * f_std;
+  // real sigma = 0.05 * sigma_std;
   
   vector<lower=0, upper=max_Z>[sum_N] Z_tilde;
   
@@ -88,9 +90,11 @@ transformed parameters {
 model {
   R2b_std ~ std_normal(); 
   R1b_std ~ std_normal();
-  f_std ~ std_normal();
+  // f_std ~ std_normal();
+  f ~ std_normal();
   k_std ~ std_normal();
-  sigma_std ~ std_normal();
+  // sigma_std ~ std_normal();
+  sigma ~ inv_gamma(3, 0.5);
   Z ~ normal(Z_tilde, sigma) T[0, max_Z];
 }
 

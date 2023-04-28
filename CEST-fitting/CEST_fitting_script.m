@@ -3,7 +3,8 @@ B0 = 9.4; % T
 w0 = gamma*B0; % in MHz
 
 % Read data table.
-cd 'C:\Users\Yuval Bernard\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
+% cd 'C:\Users\Yuval Bernard\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
+cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
 
 T = readtable('LP30_dendrotes_CEST_exp_fit.xlsx',...
     'Range','A4:AA55');
@@ -18,7 +19,7 @@ Z = [Z_500,Z_1000,Z_1500,Z_2000];
 
 % Fit from cmdstanr::pml
 dendrite = struct('T1',1/8,'T2',1/393);
-SEI = struct('T1',0.25,'T2',1/(27e3),'k',150,'f',0.015,'dw',-260*w0);
+SEI = struct('T1',1/10.9,'T2',1/(30305),'k',299,'f',0.0121,'dw',-260*w0);
 sys = struct('offsets',xZ,'tp',0.2);
 w1 = [500,1000,1500,2000];
 

@@ -59,7 +59,7 @@ Z = c(Z1,Z2,Z3,Z4)
 
 # Specify current experiment name. e.g. 'LP30_323_500_{sim/exp}'
 # for Material: LP30, temperature: 323K, w1: 500Hz
-expName <- "LP30_323_500_1000_1500_2000_exp"
+expName <- "LP30_323_500_1000_1500_2000_exp_f_std"
 
 # Create data set
 data_list <- list(
@@ -79,8 +79,10 @@ init_estimates = function() list(
   R1b_std = runif(n=1, min=0.001, max=1),
   R2b_std = runif(n=1, min=0.001, max=1),
   f_std = runif(n=1, min=0.001, max=1),
+  f = runif(n=1, min=0.001, max = 1),
   k_std = runif(n=1, min=0.001, max=1),
-  sigma_std = runif(n=1, min=0.001, max=1)
+  sigma_std = runif(n=1, min=0.001, max=1),
+  sigma = runif(n=1, min=0.001, max=1)
 )
 
 # Run MCMC ----------------------------------------------------------------
@@ -90,7 +92,8 @@ fit <- mod$sample(
   chains = 4,
   parallel_chains = 4,
   init = init_estimates,
-  iter_sampling = 2000
+  iter_warmup = 750,
+  iter_sampling = 2250
 )
 
 # Save fit object
@@ -126,8 +129,8 @@ ggsave(file.path(figDir, paste(expName,"_mcmc_neff.pdf", sep = "")),dpi = 300)
 p_mcmc_pairs <- mcmc_pairs(posterior, pars = pars_to_fit)
 print(p_mcmc_pairs)
 ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")), plot = p_mcmc_pairs, dpi = 300)
-
-
+mcmc_scatter(posterior, pars = c("f","k")) + geom_density_2d_filled(alpha = 0.5) + geom_density_2d(linewidth = 0.25, colour = "black")
+ggsave(file.path(figDir, paste(expName,"_mcmc_corr_f_k.pdf", sep = "")),dpi = 300)
 # Penalized Maximum Likelihood -------------------------------------------
 
 # Calculate transformed initial estimates.
