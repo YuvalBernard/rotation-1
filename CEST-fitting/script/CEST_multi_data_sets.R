@@ -92,8 +92,8 @@ fit <- mod$sample(
   chains = 4,
   parallel_chains = 4,
   init = init_estimates,
-  iter_warmup = 750,
-  iter_sampling = 2250,
+  iter_warmup = 500,
+  iter_sampling = 2500,
   threads_per_chain = 2,
 )
 

@@ -98,9 +98,9 @@ transformed data {
 }
 
 parameters {
-  real<lower=0> R2b_std;
+  real R2b_std;
   real<lower=0> R1b_std;
-  real<lower=0> k_std;
+  real k_std;
   real<lower=0> sigma;
   real<lower=0> f;
 }
@@ -116,7 +116,7 @@ model {
   R1b_std ~ std_normal();
   f ~ std_normal();
   k_std ~ std_normal();
-  sigma ~ inv_gamma(3, 0.5);
+  sigma ~ std_normal();
   target += sum(map_rect(cest, 
                          to_vector([R2b,R1b,f,k,sigma,dw_rad,R1a,R2a,tp]),
                          w1_rad, x_r, x_i));
