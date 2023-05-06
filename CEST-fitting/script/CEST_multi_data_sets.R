@@ -12,7 +12,6 @@
 
 rm(list = ls())
 gc()
-dev.off()
 # Load libraries
 library(cmdstanr)
 library(posterior)
@@ -21,7 +20,7 @@ library(ggplot2)
 color_scheme_set("red")
 bayesplot_theme_set(new = theme_default())
 
-modelName <- "CEST_multi_data_sets"
+modelName <- "CEST_multi_data_sets_map_rect"
 
 setwd("~/Weizmann/rotation-1/CEST-fitting/script")
 scriptDir <- getwd()
@@ -42,7 +41,7 @@ mod <- cmdstan_model(stan_file, compile = FALSE)
 mod$check_syntax(pedantic = TRUE)
 
 # Compile stan model
-mod$compile(stanc_options = list("O1"))
+mod$compile(stanc_options = list("O1"), cpp_options = list(stan_threads = TRUE))
 
 
 # Data Configuration ------------------------------------------------------
@@ -54,7 +53,7 @@ Z1 = with(Xdata,V20)
 Z2 = with(Xdata,V22)
 Z3 = with(Xdata,V24)
 Z4 = with(Xdata,V26)
-
+N = length(xZ)
 Z = c(Z1,Z2,Z3,Z4)
 
 # Specify current experiment name. e.g. 'LP30_323_500_{sim/exp}'
@@ -64,13 +63,14 @@ expName <- "LP30_323_500_1000_1500_2000_exp_f_std"
 # Create data set
 data_list <- list(
   K = 4,
-  N = c(length(Z1),length(Z2),length(Z3),length(Z4)),
+  N = N,
+  x_i = array(rep(N,times = 4), dim = c(4,1)),
   R1a = 8,
   R2a = 393,
   w1 = c(500,1000,1500,2000),
   dw = -260 * 9.4 * 16.546,
   tp = 0.2,
-  xZ = rep(xZ,times = 4),
+  xZ = xZ,
   Z = c(Z1,Z2,Z3,Z4)
 )
 
@@ -93,7 +93,8 @@ fit <- mod$sample(
   parallel_chains = 4,
   init = init_estimates,
   iter_warmup = 750,
-  iter_sampling = 2250
+  iter_sampling = 2250,
+  threads_per_chain = 2,
 )
 
 # Save fit object
