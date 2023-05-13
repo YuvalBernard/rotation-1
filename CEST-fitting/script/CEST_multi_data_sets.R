@@ -31,6 +31,10 @@ dataDir <- file.path(projectDir, "data", "derived")
 modelDir <- file.path(projectDir, "model")
 outDir <- file.path(modelDir, modelName)
 
+dir.create(file.path(modelDir, modelName), showWarnings = FALSE)
+dir.create(file.path(figDir, modelName), showWarnings = FALSE)
+dir.create(file.path(tabDir, modelName), showWarnings = FALSE)
+
 
 # Model Configuration -----------------------------------------------------
 
@@ -48,22 +52,19 @@ mod$compile(stanc_options = list("O1"), cpp_options = list(stan_threads = TRUE))
 
 # Read data
 Xdata <- read.csv(file.path(dataDir, "LP30_dendrotes_CEST_exp_fit.csv"),header = FALSE, skip = 3)
-xZ = with(Xdata,V1) * 16.546 * 9.4; # Convert from ppm to Hz and Lithium.
-Z1 = with(Xdata,V20)
-Z2 = with(Xdata,V22)
-Z3 = with(Xdata,V24)
-Z4 = with(Xdata,V26)
-N = length(xZ)
-Z = c(Z1,Z2,Z3,Z4)
+xZ = Xdata[,1] * 16.546 * 9.4; # Convert from ppm to Hz and Lithium.
+Z = c(as.matrix(sapply(Xdata[,-1], as.numeric)))
 
 # Specify current experiment name. e.g. 'LP30_323_500_{sim/exp}'
 # for Material: LP30, temperature: 323K, w1: 500Hz
 expName <- "LP30_323_500_1000_1500_2000_exp_f_std"
 
+dims = dim(Xdata)
+
 # Create data set
 data_list <- list(
-  K = 4,
-  N = N,
+  K = dims[2] - 1,
+  N = dims[1],
   x_i = array(rep(N,times = 4), dim = c(4,1)),
   R1a = 8,
   R2a = 393,

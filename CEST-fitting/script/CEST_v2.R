@@ -9,14 +9,12 @@
 # cmdstan_make_local(cpp_options = cpp_options, append = TRUE)
 # install_cmdstan(cores = 4) or rebuild_cmdstan(cores = 4) if already installed without optimizations
 
-
 rm(list = ls())
 gc()
 # Load libraries
 library(cmdstanr)
-library(posterior)
-library(bayesplot)
-library(ggplot2)
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(posterior, bayesplot, ggplot2, writexl)
 color_scheme_set("red")
 bayesplot_theme_set(new = theme_default())
 
@@ -69,11 +67,11 @@ data_list <- list(
 
 # Specify initial estimates
 init_estimates = function() list(
-  # R1b_std = runif(n=1, min=0.01, max=1),
-  # R2b_std = runif(n=1, min=0.01, max=1),
-  # f_std = runif(n=1, min=0.01, max=1),
-  # k_std = runif(n=1, min=0.01, max=1),
-  # sigma_std = runif(n=1, min=0.01, max=1)
+  R1b_std = runif(n=1, min=0.01, max=1),
+  R2b_std = runif(n=1, min=0.01, max=1),
+  f_std = runif(n=1, min=0.01, max=1),
+  k_std = runif(n=1, min=0.01, max=1),
+  sigma_std = runif(n=1, min=0.01, max=1),
   R1b = 1,
   R2b = 25000,
   f = 0.02,
@@ -88,7 +86,7 @@ fit <- mod$sample(
   chains = 4,
   parallel_chains = 4,
   init = init_estimates,
-  iter_sampling = 2000
+  iter_sampling = 1000
 )
 
 # Save fit object
@@ -110,20 +108,23 @@ posterior <- as.array(fit$draws())
 fit_summary <- fit$summary(pars_to_fit)
 print(fit_summary)
 
+# Save summary statistics to .xlsx
+write_xlsx(fit_summary, file = file.path(tabDir, paste(expName, "_fit.xlsx", sep = "")))
+
 # Plot MCMC diagnostics 
 p_mcmc_combo <- mcmc_combo(
   posterior,
   combo = c("dens_overlay", "trace"),
   pars = pars_to_fit)
 print(p_mcmc_combo)
-ggsave(file.path(figDir, paste(expName,"_mcmc_combo.pdf", sep = "")), plot = p_mcmc_combo, dpi = 300)
+ggsave(file.path(figDir, paste(expName,"_mcmc_combo.png", sep = "")), plot = p_mcmc_combo)
 mcmc_rhat(rhat(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
-ggsave(file.path(figDir, paste(expName,"_mcmc_rhat.pdf", sep = "")),dpi = 300)
+ggsave(file.path(figDir, paste(expName,"_mcmc_rhat.png", sep = "")))
 mcmc_neff(neff_ratio(fit,pars = pars_to_fit)) + yaxis_text(hjust = 1)
-ggsave(file.path(figDir, paste(expName,"_mcmc_neff.pdf", sep = "")),dpi = 300)
+ggsave(file.path(figDir, paste(expName,"_mcmc_neff.png", sep = "")))
 p_mcmc_pairs <- mcmc_pairs(posterior, pars = pars_to_fit)
 print(p_mcmc_pairs)
-ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.pdf", sep = "")), plot = p_mcmc_pairs, dpi = 300)
+ggsave(file.path(figDir, paste(expName,"_mcmc_pairs.png", sep = "")), plot = p_mcmc_pairs)
 
 
 # Penalized Maximum Likelihood -------------------------------------------
