@@ -4,7 +4,7 @@ w0 = gamma*B0; % in MHz
 
 % Read data table.
 % cd 'C:\Users\Yuval Bernard\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
-cd 'C:\Users\berna\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
+cd 'C:\Users\Yuval Bernard\Documents\Weizmann\rotation-1\CEST-fitting\data\derived'
 
 T = readtable('LP30_dendrotes_CEST_exp_fit.xlsx',...
     'Range','A4:AA55');
